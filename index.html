@@ -2,2300 +2,675 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NruS Adisyon Pro - Restoran Adisyon Sistemi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ciro Takip Premium</title>
+    
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Font Awesome (Pro icons fallback to free) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: Plus Jakarta Sans for a premium look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind Config for Premium Theme -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6', // Teal
+                            600: '#0d9488',
+                            900: '#134e4a',
+                        },
+                        success: '#10b981', // Emerald
+                        danger: '#f43f5e',  // Rose
+                        dark: '#0f172a',    // Slate 900
+                        surface: '#f8fafc', // Slate 50
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'floating': '0 20px 40px -20px rgba(0,0,0,0.15)',
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+        /* Custom Styles & Animations */
+        body { 
+            background-color: #f1f5f9; 
+            -webkit-tap-highlight-color: transparent;
         }
         
-        /* Baskı ve Ekran Görünürlük Kontrolleri */
-        .print-only {
-            display: none !important;
+        /* Hide scrollbar for clean UI */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        
+        .tab-content { 
+            display: none; 
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        @media print {
-            body * {
-                visibility: hidden !important;
-            }
-            .no-print {
-                display: none !important;
-            }
-            #printArea, #printArea * {
-                visibility: visible !important;
-            }
-            #printArea {
-                display: block !important;
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                background: white;
-                color: black;
-            }
+        .tab-content.active { 
+            display: block; 
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .premium-card {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            box-shadow: 0 15px 35px -10px rgba(15, 23, 42, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Card decoration */
+        .premium-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(20,184,166,0.15) 0%, rgba(20,184,166,0) 70%);
+        }
+
+        .list-item-enter {
+            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Modal Overlay */
+        #modal-overlay {
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+<body class="text-slate-800 h-screen flex flex-col items-center">
 
-    <!-- Üst Menü / Header -->
-    <header class="bg-slate-950 text-white shadow-md sticky top-0 z-40 no-print">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="bg-amber-500 text-slate-950 p-2 rounded-lg font-bold flex items-center justify-center">
-                    <i class="bi bi-receipt-cutoff text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight">NruS ADİSYON<span class="text-amber-500">PRO</span></h1>
-                    <p class="text-xs text-slate-400">Akıllı Restoran Yönetim Sistemi</p>
-                </div>
-            </div>
-            
-            <!-- Canlı Saat & Bilgi -->
-            <div class="flex items-center space-x-6">
-                <div class="hidden md:flex flex-col text-right">
-                    <span id="liveClock" class="text-sm font-semibold text-slate-200">00:00:00</span>
-                    <span id="liveDate" class="text-xs text-slate-400">10 Haziran 2026</span>
-                </div>
-                <div class="flex space-x-2">
-                    <button onclick="switchTab('tables')" id="tabBtn-tables" class="tab-btn px-4 py-2 rounded-lg bg-amber-500 text-slate-950 font-medium transition duration-200 flex items-center space-x-2">
-                        <i class="bi bi-grid-3x3-gap-fill"></i>
-                        <span class="hidden sm:inline">Masalar</span>
-                    </button>
-                    <button onclick="switchTab('menu')" id="tabBtn-menu" class="tab-btn px-4 py-2 rounded-lg hover:bg-slate-800 text-slate-300 font-medium transition duration-200 flex items-center space-x-2">
-                        <i class="bi bi-egg-fried"></i>
-                        <span class="hidden sm:inline">Menü</span>
-                    </button>
-                    <button onclick="switchTab('report')" id="tabBtn-report" class="tab-btn px-4 py-2 rounded-lg hover:bg-slate-800 text-slate-300 font-medium transition duration-200 flex items-center space-x-2">
-                        <i class="bi bi-bar-chart-line-fill"></i>
-                        <span class="hidden sm:inline">Raporlar / Cari</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Ana İçerik -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 no-print">
+    <!-- App Container (Mobile Sized for Desktop view) -->
+    <div class="w-full max-w-md h-full flex flex-col bg-surface shadow-2xl relative overflow-hidden sm:border-x sm:border-slate-200">
         
-        <!-- ================= MASALAR SEKME İÇERİĞİ ================= -->
-        <section id="tab-tables" class="tab-content block">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Header -->
+        <header class="pt-10 pb-4 px-6 bg-surface z-10">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-1" id="current-date">Bugün</h1>
+                    <h2 class="text-2xl font-extrabold text-dark tracking-tight">Ciro Takip</h2>
+                </div>
+                <div class="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center text-brand-600 border border-slate-100">
+                    <i class="fa-solid fa-gem text-xl"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto pb-28 px-6 pt-2 scroll-smooth">
+            
+            <!-- TAB 1: Genel Takip (Dashboard) -->
+            <div id="tab-genel" class="tab-content active space-y-8">
                 
-                <!-- Sol Taraf: Masa Listesi ve Filtreler -->
-                <div class="lg:col-span-2 space-y-6">
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-wrap gap-3 items-center justify-between">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-sm font-semibold text-slate-500">Filtrele:</span>
-                            <button onclick="filterTables('all')" id="filter-all" class="filter-btn px-3 py-1.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-800 border border-slate-200">Tümü</button>
-                            <button onclick="filterTables('empty')" id="filter-empty" class="filter-btn px-3 py-1.5 text-xs font-semibold rounded-full bg-slate-50 text-slate-600 border border-transparent hover:bg-slate-100">Boşlar</button>
-                            <button onclick="filterTables('active')" id="filter-active" class="filter-btn px-3 py-1.5 text-xs font-semibold rounded-full bg-slate-50 text-slate-600 border border-transparent hover:bg-slate-100">Dolular</button>
-                            <button onclick="filterTables('billing')" id="filter-billing" class="filter-btn px-3 py-1.5 text-xs font-semibold rounded-full bg-slate-50 text-slate-600 border border-transparent hover:bg-slate-100">Hesap İstenenler</button>
+                <!-- Premium Net Balance Card -->
+                <div class="premium-card rounded-3xl p-6 text-white">
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <p class="text-slate-400 text-xs font-semibold tracking-wider uppercase mb-1">Net Durum (Ciro)</p>
+                            <h3 id="net-balance" class="text-4xl font-black tracking-tight">0.00 ₺</h3>
                         </div>
-                        <div class="flex space-x-2">
-                            <button onclick="openAddTableModal()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 flex items-center space-x-1.5">
-                                <i class="bi bi-plus-lg"></i>
-                                <span>Masa Ekle</span>
-                            </button>
-                        </div>
+                        <i class="fa-brands fa-apple-pay text-3xl opacity-50"></i>
                     </div>
-
-                    <!-- Masa Izgarası -->
-                    <div id="tablesGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                        <!-- JS dinamik olarak dolduracak -->
+                    
+                    <!-- Progress Bar for Ratio -->
+                    <div class="mt-4">
+                        <div class="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+                            <span>Gelir Oranı</span>
+                            <span id="ratio-text">%0</span>
+                        </div>
+                        <div class="h-1.5 w-full bg-slate-700 rounded-full overflow-hidden flex">
+                            <div id="ratio-bar-income" class="bg-success h-full transition-all duration-700" style="width: 0%"></div>
+                            <div id="ratio-bar-expense" class="bg-danger h-full transition-all duration-700" style="width: 0%"></div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Sağ Taraf: Aktif Masa Adisyon Paneli -->
-                <div class="lg:col-span-1">
-                    <div id="noSelectedTable" class="bg-white p-8 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center h-[550px]">
-                        <div class="w-16 h-16 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center mb-4">
-                            <i class="bi bi-hand-index-thumb text-3xl"></i>
+                <!-- Summary Pills -->
+                <div class="flex gap-4">
+                    <div class="flex-1 bg-white rounded-2xl p-4 shadow-soft flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
+                            <i class="fa-solid fa-arrow-trend-up"></i>
                         </div>
-                        <h3 class="text-base font-semibold text-slate-700">Masayı Seçin</h3>
-                        <p class="text-xs text-slate-400 mt-2 max-w-[240px]">Sipariş girmek, adisyonu görüntülemek veya ödeme almak için sol taraftan bir masa seçin.</p>
+                        <div>
+                            <p class="text-xs text-slate-400 font-semibold mb-0.5">Gelir</p>
+                            <p id="total-income" class="text-sm font-bold text-slate-800">0.00 ₺</p>
+                        </div>
                     </div>
-
-                    <!-- Aktif Masa Paneli -->
-                    <div id="activeTablePanel" class="bg-white rounded-xl shadow-md border border-slate-100 flex flex-col h-[650px] hidden overflow-hidden">
-                        <!-- Panel Başlığı -->
-                        <div class="bg-slate-900 text-white p-4 flex items-center justify-between">
-                            <div class="flex items-center space-x-2">
-                                <span class="bg-amber-500 text-slate-950 font-bold px-2 py-1 rounded text-sm" id="panelTableCode">Masa 1</span>
-                                <div class="text-left">
-                                    <h4 class="font-semibold text-sm" id="panelTableName">Giriş Kat - Masa 1</h4>
-                                    <p class="text-[10px] text-slate-400" id="panelTableTime">Giriş: 12:40</p>
-                                </div>
-                            </div>
+                    <div class="flex-1 bg-white rounded-2xl p-4 shadow-soft flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-500">
+                            <i class="fa-solid fa-arrow-trend-down"></i>
                         </div>
+                        <div>
+                            <p class="text-xs text-slate-400 font-semibold mb-0.5">Gider</p>
+                            <p id="total-expense" class="text-sm font-bold text-slate-800">0.00 ₺</p>
+                        </div>
+                    </div>
+                </div>
 
-                        <!-- Panel Gövdesi: Adisyon Detayı -->
-                        <div class="flex-grow overflow-y-auto p-4 space-y-4">
-                            <div class="flex items-center justify-between border-b pb-2">
-                                <span class="text-xs font-bold text-slate-500 uppercase">Sipariş Listesi</span>
-                                <button onclick="clearActiveOrders()" class="text-xs text-rose-500 hover:text-rose-700 flex items-center space-x-1 font-medium">
-                                    <i class="bi bi-trash"></i> <span>Tümünü Sil</span>
-                                </button>
-                            </div>
+                <!-- Transactions Section -->
+                <div>
+                    <div class="flex justify-between items-end mb-4">
+                        <h3 class="text-lg font-bold text-dark">Son İşlemler</h3>
+                        <button onclick="openModal('clearAll')" class="text-xs font-semibold text-slate-400 hover:text-danger transition-colors">Tümünü Temizle</button>
+                    </div>
+                    
+                    <div id="transactions-list" class="space-y-3">
+                        <!-- İşlemler JS ile eklenecek -->
+                    </div>
+                        
+                    <!-- Empty State -->
+                    <div id="empty-state" class="text-center py-10">
+                        <div class="w-20 h-20 mx-auto bg-slate-100 rounded-full flex items-center justify-center text-slate-300 mb-4">
+                            <i class="fa-solid fa-receipt text-3xl"></i>
+                        </div>
+                        <h4 class="text-slate-600 font-semibold">Henüz İşlem Yok</h4>
+                        <p class="text-slate-400 text-sm mt-1">Görüntülenecek veri bulunamadı.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: İşlem Ekle -->
+            <div id="tab-islem" class="tab-content">
+                <div class="bg-white rounded-3xl shadow-soft p-6 mb-6">
+                    <h2 class="text-xl font-bold text-dark mb-6">Yeni İşlem</h2>
+                    
+                    <form id="transaction-form" class="space-y-6">
+                        
+                        <!-- Segmented Control (Income/Expense) -->
+                        <div class="bg-slate-100 p-1 rounded-xl flex relative">
+                            <!-- Sliding background -->
+                            <div id="segment-bg" class="absolute w-1/2 h-[calc(100%-8px)] bg-white rounded-lg shadow-sm transition-transform duration-300 left-1 top-1"></div>
                             
-                            <div id="orderItemsList" class="space-y-3 min-h-[220px]">
-                                <!-- Adisyon Satırları Dinamik Gelecek -->
-                            </div>
-
-                            <!-- Müşteri Sayısı ve Not Girişi -->
-                            <div class="grid grid-cols-2 gap-2 pt-2 border-t">
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kişi Sayısı</label>
-                                    <div class="flex items-center space-x-1">
-                                        <button onclick="adjustCapacity(-1)" class="w-6 h-6 rounded bg-slate-100 text-slate-700 flex items-center justify-center hover:bg-slate-200">-</button>
-                                        <span id="activeTableCapacity" class="text-sm font-semibold w-8 text-center">2</span>
-                                        <button onclick="adjustCapacity(1)" class="w-6 h-6 rounded bg-slate-100 text-slate-700 flex items-center justify-center hover:bg-slate-200">+</button>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Masa Durumu</label>
-                                    <select id="activeTableStatus" onchange="changeTableStatus(this.value)" class="w-full text-xs border rounded p-1 font-medium bg-slate-50">
-                                        <option value="empty">Boş</option>
-                                        <option value="active">Dolu / Servis Var</option>
-                                        <option value="billing">Ödeme Bekliyor</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Menüden Sipariş Ekleme Hızlı Alanı -->
-                        <div class="bg-slate-50 p-3 border-t border-b border-slate-100">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-[10px] font-bold text-slate-500 uppercase">Hızlı Sipariş Ekle</span>
-                                <button onclick="openMenuForTable()" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center space-x-1">
-                                    <span>Tüm Menüyü Gör</span> <i class="bi bi-chevron-right text-[10px]"></i>
-                                </button>
-                            </div>
-                            <div class="flex space-x-1 overflow-x-auto pb-1" id="quickMenuCategories">
-                                <!-- Kategori Seçenekleri -->
-                            </div>
-                            <div class="grid grid-cols-3 gap-1 mt-1 max-h-[110px] overflow-y-auto" id="quickMenuItems">
-                                <!-- Hızlı ürün butonları -->
-                            </div>
-                        </div>
-
-                        <!-- Panel Altı: Toplam ve İşlem Butonları -->
-                        <div class="bg-white p-4 border-t border-slate-100 space-y-3">
-                            <div class="space-y-1.5">
-                                <div class="flex justify-between text-xs text-slate-500">
-                                    <span>Ara Toplam:</span>
-                                    <span id="panelSubtotal">₺0,00</span>
-                                </div>
-                                <div class="flex justify-between text-xs text-slate-500">
-                                    <div class="flex items-center space-x-1">
-                                        <span>İndirim / İkram:</span>
-                                        <button onclick="openDiscountModal()" class="text-indigo-600 hover:text-indigo-800"><i class="bi bi-pencil-square"></i></button>
-                                    </div>
-                                    <span id="panelDiscount" class="text-rose-500">-₺0,00</span>
-                                </div>
-                                <div class="flex justify-between text-base font-bold text-slate-900 border-t pt-1.5">
-                                    <span>GENEL TOPLAM:</span>
-                                    <span id="panelTotal" class="text-emerald-600">₺0,00</span>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-2 pt-1">
-                                <button onclick="openPaymentModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center space-x-2 text-sm transition shadow-sm">
-                                    <i class="bi bi-cash-coin"></i>
-                                    <span>Ödeme Al</span>
-                                </button>
-                                <button onclick="printActiveOrder()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2 px-4 rounded-lg flex items-center justify-center space-x-2 text-xs transition">
-                                    <i class="bi bi-printer"></i>
-                                    <span>Adisyon Yazdır</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- ================= MENÜ YÖNETİMİ SEKME İÇERİĞİ ================= -->
-        <section id="tab-menu" class="tab-content hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <!-- Kategoriler Menüsü -->
-                <div class="lg:col-span-1 space-y-4">
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="font-bold text-sm text-slate-800 uppercase tracking-wider">Kategoriler</h3>
-                            <button onclick="openAddCategoryModal()" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center space-x-0.5">
-                                <i class="bi bi-plus-lg"></i>
-                                <span>Yeni</span>
+                            <button type="button" id="btn-type-income" onclick="setTransactionType('income')" class="relative z-10 flex-1 py-2.5 text-sm font-bold text-success transition-colors">
+                                Gelir Ekle
                             </button>
-                        </div>
-                        <div id="menuCategoriesList" class="space-y-1">
-                            <!-- JS ile doldurulacak -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Ürünler Listesi -->
-                <div class="lg:col-span-3 space-y-6">
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-wrap gap-4 items-center justify-between">
-                        <div>
-                            <h3 id="currentMenuCategoryTitle" class="text-lg font-bold text-slate-800">Tüm Ürünler</h3>
-                            <p class="text-xs text-slate-400">Ürünlerin üzerine tıklayarak düzenleyebilir veya yeni ürün ekleyebilirsiniz.</p>
-                        </div>
-                        <div class="flex space-x-2 w-full sm:w-auto">
-                            <div class="relative flex-grow sm:flex-grow-0">
-                                <input type="text" id="searchMenuItem" oninput="searchMenu()" placeholder="Ürün Ara..." class="w-full text-xs pl-8 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <i class="bi bi-search absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
-                            </div>
-                            <button onclick="openAddProductModal()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 flex items-center space-x-1.5 whitespace-nowrap">
-                                <i class="bi bi-plus-lg"></i>
-                                <span>Ürün Ekle</span>
+                            <button type="button" id="btn-type-expense" onclick="setTransactionType('expense')" class="relative z-10 flex-1 py-2.5 text-sm font-bold text-slate-400 transition-colors">
+                                Gider Ekle
                             </button>
+                            <input type="hidden" id="trans-type" value="income">
                         </div>
-                    </div>
 
-                    <!-- Ürünler Izgarası -->
-                    <div id="menuItemsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        <!-- JS Dinamik Dolduracak -->
-                    </div>
-                </div>
-            </div>
-        </section>
+                        <!-- Amount Input -->
+                        <div class="text-center">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Tutar (₺)</label>
+                            <input type="number" name="amount" id="trans-amount" class="w-full text-center text-4xl font-black text-dark bg-transparent border-b-2 border-slate-200 focus:border-brand-500 focus:outline-none py-2 transition-colors placeholder-slate-200" placeholder="0.00" required step="0.01">
+                        </div>
 
-        <!-- ================= RAPORLAR VE CARİ DELEGE SEKME İÇERİĞİ ================= -->
-        <section id="tab-report" class="tab-content hidden space-y-6">
-            <!-- Genel İstatistik Kartları -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center space-x-4">
-                    <div class="p-3 rounded-lg bg-emerald-50 text-emerald-600">
-                        <i class="bi bi-wallet2 text-2xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-medium text-slate-400">Bugünkü Ciro (Net Gelir)</p>
-                        <h4 class="text-xl font-bold text-slate-800" id="reportDailyRevenue">₺0,00</h4>
-                    </div>
-                </div>
-
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center space-x-4">
-                    <div class="p-3 rounded-lg bg-indigo-50 text-indigo-600">
-                        <i class="bi bi-receipt text-2xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-medium text-slate-400">Tamamlanan İşlem</p>
-                        <h4 class="text-xl font-bold text-slate-800" id="reportDailyOrdersCount">0</h4>
-                    </div>
-                </div>
-
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center space-x-4">
-                    <div class="p-3 rounded-lg bg-amber-50 text-amber-600">
-                        <i class="bi bi-percent text-2xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-medium text-slate-400">Uygulanan İndirimler</p>
-                        <h4 class="text-xl font-bold text-slate-800" id="reportDailyDiscounts">₺0,00</h4>
-                    </div>
-                </div>
-
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center space-x-4">
-                    <div class="p-3 rounded-lg bg-rose-50 text-rose-600">
-                        <i class="bi bi-hourglass-split text-2xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-medium text-rose-400 font-semibold text-rose-500">Açık Masalar</p>
-                        <h4 class="text-xl font-bold text-slate-800" id="reportActiveTables">0</h4>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Analiz, Grafikler ve Cari Hesap Defteri -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Ödeme Yöntemleri Dağılımı -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 lg:col-span-1 flex flex-col justify-between">
-                    <div>
-                        <h3 class="font-bold text-sm text-slate-800 uppercase tracking-wider mb-4">Ödeme Yöntemleri Dağılımı</h3>
-                        
-                        <div class="flex justify-center my-4">
-                            <!-- Basit SVG Donut Grafiği (Çok Dilimli) -->
-                            <div class="relative w-36 h-36">
-                                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                    <path class="text-slate-100" stroke-width="4" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                    <path id="svgNakitPath" class="text-emerald-500" stroke-dasharray="0, 100" stroke-width="4.2" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                    <path id="svgKartPath" class="text-indigo-500" stroke-dasharray="0, 100" stroke-width="4.2" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                    <path id="svgCariPath" class="text-amber-500" stroke-dasharray="0, 100" stroke-width="4.2" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                    <path id="svgOnlinePath" class="text-rose-500" stroke-dasharray="0, 100" stroke-width="4.2" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                    <path id="svgTreatPath" class="text-teal-500" stroke-dasharray="0, 100" stroke-width="4.2" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                </svg>
-                                <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-2">
-                                    <span class="text-[8px] text-slate-400 uppercase font-bold leading-tight">En Popüler</span>
-                                    <span class="text-xs font-extrabold text-slate-700 truncate max-w-[80px]" id="reportMostUsedMethod">Nakit</span>
+                        <!-- Category -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Kategori</label>
+                            <div class="relative">
+                                <select id="trans-category" class="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 py-3.5 px-4 rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                                    <option value="Nakit">💵 Nakit</option>
+                                    <option value="Havale">🏦 Havale</option>
+                                    <option value="EFT">⚡ EFT</option>
+                                    <option value="Yakıt">⛽ Yakıt</option>
+                                    <option value="Diğer">📦 Diğer</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                                    <i class="fa-solid fa-chevron-down text-xs"></i>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Detaylı İlerleme Çubukları (Tüm Ödeme Kanalları İçin) -->
-                    <div class="space-y-2.5 mt-2">
-                        <!-- Nakit -->
+                        <!-- Description -->
                         <div>
-                            <div class="flex justify-between text-[11px] font-medium text-slate-600 mb-0.5">
-                                <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-1.5"></span>Nakit</span>
-                                <span class="font-bold text-slate-800" id="reportTotalCash">₺0,00</span>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Açıklama (İsteğe Bağlı)</label>
+                            <input type="text" id="trans-desc" class="w-full bg-slate-50 border border-slate-200 text-slate-700 py-3.5 px-4 rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all" placeholder="Örn: Akaryakıt, Müşteri ödemesi...">
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="w-full py-4 rounded-xl font-bold text-white bg-dark hover:bg-slate-800 shadow-floating hover:shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                            <i class="fa-solid fa-check"></i>
+                            İşlemi Kaydet
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- TAB 3: Ayarlar -->
+            <div id="tab-ayarlar" class="tab-content">
+                <h2 class="text-xl font-bold text-dark mb-6 px-1">Ayarlar</h2>
+                
+                <div class="bg-white rounded-3xl shadow-soft overflow-hidden">
+                    
+                    <!-- Pro Feature (Visual only) -->
+                    <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-brand-50 to-white">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center">
+                                <i class="fa-solid fa-crown"></i>
                             </div>
-                            <div class="w-full bg-slate-100 h-1 rounded-full"><div id="barCash" class="bg-emerald-500 h-1 rounded-full" style="width: 0%"></div></div>
-                        </div>
-                        <!-- Kart -->
-                        <div>
-                            <div class="flex justify-between text-[11px] font-medium text-slate-600 mb-0.5">
-                                <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500 mr-1.5"></span>Kredi Kartı</span>
-                                <span class="font-bold text-slate-800" id="reportTotalCard">₺0,00</span>
-                            </div>
-                            <div class="w-full bg-slate-100 h-1 rounded-full"><div id="barCard" class="bg-indigo-500 h-1 rounded-full" style="width: 0%"></div></div>
-                        </div>
-                        <!-- Cari -->
-                        <div>
-                            <div class="flex justify-between text-[11px] font-medium text-slate-600 mb-0.5">
-                                <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 mr-1.5"></span>Cari (Veresiye)</span>
-                                <span class="font-bold text-slate-800" id="reportTotalCari">₺0,00</span>
-                            </div>
-                            <div class="w-full bg-slate-100 h-1 rounded-full"><div id="barCari" class="bg-amber-500 h-1 rounded-full" style="width: 0%"></div></div>
-                        </div>
-                        <!-- Yemeksepeti -->
-                        <div>
-                            <div class="flex justify-between text-[11px] font-medium text-slate-600 mb-0.5">
-                                <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-rose-600 mr-1.5"></span>Yemeksepeti</span>
-                                <span class="font-bold text-slate-800" id="reportTotalYemeksepeti">₺0,00</span>
-                            </div>
-                            <div class="w-full bg-slate-100 h-1 rounded-full"><div id="barYemeksepeti" class="bg-rose-600 h-1 rounded-full" style="width: 0%"></div></div>
-                        </div>
-                        <!-- Getir -->
-                        <div>
-                            <div class="flex justify-between text-[11px] font-medium text-slate-600 mb-0.5">
-                                <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-purple-600 mr-1.5"></span>Getir Yemek</span>
-                                <span class="font-bold text-slate-800" id="reportTotalGetir">₺0,00</span>
-                            </div>
-                            <div class="w-full bg-slate-100 h-1 rounded-full"><div id="barGetir" class="bg-purple-600 h-1 rounded-full" style="width: 0%"></div></div>
-                        </div>
-                        <!-- Trendyol -->
-                        <div>
-                            <div class="flex justify-between text-[11px] font-medium text-slate-600 mb-0.5">
-                                <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-orange-500 mr-1.5"></span>Trendyol Yemek</span>
-                                <span class="font-bold text-slate-800" id="reportTotalTrendyol">₺0,00</span>
-                            </div>
-                            <div class="w-full bg-slate-100 h-1 rounded-full"><div id="barTrendyol" class="bg-orange-500 h-1 rounded-full" style="width: 0%"></div></div>
-                        </div>
-                        <!-- İkram -->
-                        <div>
-                            <div class="flex justify-between text-[11px] font-medium text-slate-600 mb-0.5">
-                                <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-teal-500 mr-1.5"></span>İkram (Treat)</span>
-                                <span class="font-bold text-slate-800" id="reportTotalIkram">₺0,00</span>
-                            </div>
-                            <div class="w-full bg-slate-100 h-1 rounded-full"><div id="barIkram" class="bg-teal-500 h-1 rounded-full" style="width: 0%"></div></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Son İşlemler & Kapatılan Adisyonlar -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 lg:col-span-2 flex flex-col h-[520px]">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-bold text-sm text-slate-800 uppercase tracking-wider">Son Kapatılan Adisyonlar</h3>
-                        <button onclick="clearAllReports()" class="text-xs text-rose-500 hover:text-rose-700 flex items-center space-x-1">
-                            <i class="bi bi-trash-fill"></i>
-                            <span>Tarihçeyi Temizle</span>
-                        </button>
-                    </div>
-
-                    <div class="flex-grow overflow-y-auto">
-                        <table class="w-full text-left text-xs">
-                            <thead class="bg-slate-50 text-slate-500 uppercase font-bold sticky top-0">
-                                <tr>
-                                    <th class="p-3 rounded-l-lg">Adisyon ID</th>
-                                    <th class="p-3">Masa</th>
-                                    <th class="p-3">Saat</th>
-                                    <th class="p-3">Kanal / Tür</th>
-                                    <th class="p-3 text-right rounded-r-lg">Tutar</th>
-                                </tr>
-                            </thead>
-                            <tbody id="completedBillsTable" class="divide-y divide-slate-100">
-                                <!-- Dinamik satırlar -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Cari Hesap Defteri (Veresiye Müşterileri) -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 w-full">
-                <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-                    <div>
-                        <h3 class="font-bold text-sm text-slate-800 uppercase tracking-wider flex items-center space-x-2">
-                            <i class="bi bi-person-lines-fill text-amber-500 text-lg"></i>
-                            <span>Cari Hesap Defteri (Veresiye Takibi)</span>
-                        </h3>
-                        <p class="text-xs text-slate-400 mt-1">Açık hesaba kaydedilen borçları, cari müşteri detaylarını ve tahsilat süreçlerini buradan takip edin.</p>
-                    </div>
-                    <button onclick="openNewCustomerModal()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 flex items-center space-x-1.5 shadow-sm">
-                        <i class="bi bi-person-plus"></i>
-                        <span>Cari Kartı Oluştur</span>
-                    </button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead class="bg-slate-50 text-slate-500 uppercase font-bold">
-                            <tr>
-                                <th class="p-3">Müşteri Adı</th>
-                                <th class="p-3">Telefon No</th>
-                                <th class="p-3 text-right">Toplam Borç</th>
-                                <th class="p-3 text-right">İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody id="cariCustomersTable" class="divide-y divide-slate-100">
-                            <!-- JS dinamik olarak dolduracak -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Masa Yönetimi Paneli -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 w-full">
-                <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-                    <div>
-                        <h3 class="font-bold text-sm text-slate-800 uppercase tracking-wider flex items-center space-x-2">
-                            <i class="bi bi-grid-3x3-gap-fill text-indigo-500 text-lg"></i>
-                            <span>Masa Yönetimi</span>
-                        </h3>
-                        <p class="text-xs text-slate-400 mt-1">Sistemdeki tüm masaları, kapasitelerini ve anlık durumlarını buradan yönetebilir, boş masaları silebilirsiniz.</p>
-                    </div>
-                    <button onclick="openAddTableModal()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 flex items-center space-x-1.5 shadow-sm">
-                        <i class="bi bi-plus-lg"></i>
-                        <span>Yeni Masa Ekle</span>
-                    </button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead class="bg-slate-50 text-slate-500 uppercase font-bold">
-                            <tr>
-                                <th class="p-3">Masa Adı / Kodu</th>
-                                <th class="p-3">Bölge / Konum</th>
-                                <th class="p-3">Kapasite</th>
-                                <th class="p-3">Durum</th>
-                                <th class="p-3 text-right">İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody id="manageTablesTable" class="divide-y divide-slate-100">
-                            <!-- JS dinamik olarak dolduracak -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Alt Bilgi / Footer -->
-    <footer class="bg-slate-900 text-slate-500 py-6 border-t border-slate-800 text-center text-xs mt-auto no-print">
-        <p>© 2026 NruS Adisyon Pro. Tüm hakları saklıdır. İnternet bağlantısı gerektirmeden çalışır.</p>
-    </footer>
-
-
-    <!-- ================= MODALLAR VE DİYALOGLAR ================= -->
-
-    <!-- ÖZEL MODAL UYARI VE ONAY SİSTEMİ (STANDART CONFIRM / ALERT YERİNE) -->
-    <div id="customAlertModal" class="fixed inset-0 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center z-[99] hidden no-print">
-        <div class="bg-white rounded-xl shadow-lg max-w-sm w-full mx-4 overflow-hidden">
-            <div id="customAlertHeader" class="bg-slate-900 text-white p-4 flex items-center space-x-2">
-                <i id="customAlertIcon" class="bi bi-exclamation-triangle-fill text-amber-500 text-lg"></i>
-                <h3 id="customAlertTitle" class="font-bold text-sm">Sistem Uyarısı</h3>
-            </div>
-            <div class="p-5 text-sm text-slate-600" id="customAlertMessage">
-                Mesaj içeriği buraya gelecek.
-            </div>
-            <div class="bg-slate-50 p-4 flex justify-end space-x-2 border-t" id="customAlertButtons">
-                <!-- Dinamik Butonlar -->
-            </div>
-        </div>
-    </div>
-
-    <!-- 1. Masa Ekleme Modalı -->
-    <div id="addTableModal" class="fixed inset-0 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center z-50 hidden no-print">
-        <div class="bg-white rounded-xl shadow-lg max-w-sm w-full mx-4 overflow-hidden">
-            <div class="bg-slate-900 text-white p-4 flex items-center justify-between">
-                <h3 class="font-bold text-sm">Yeni Masa Ekle</h3>
-                <button onclick="closeModal('addTableModal')" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
-            </div>
-            <div class="p-4 space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">Masa Adı / Kodu</label>
-                    <input type="text" id="newTableName" placeholder="Örn: Masa 12, Bahçe 4" class="w-full text-sm border rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">Kapasite</label>
-                    <input type="number" id="newTableCapacity" value="4" min="1" class="w-full text-sm border rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">Kategori / Konum</label>
-                    <select id="newTableArea" class="w-full text-sm border rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                        <option value="Giriş Kat">Giriş Kat</option>
-                        <option value="Bahçe">Bahçe</option>
-                        <option value="Teras">Teras</option>
-                        <option value="VIP">VIP Salonu</option>
-                    </select>
-                </div>
-            </div>
-            <div class="bg-slate-50 p-4 flex justify-end space-x-2 border-t">
-                <button onclick="closeModal('addTableModal')" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-150 rounded-lg">İptal</button>
-                <button onclick="saveNewTable()" class="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg">Kaydet</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 2. İndirim / İkram Modalı -->
-    <div id="discountModal" class="fixed inset-0 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center z-50 hidden no-print">
-        <div class="bg-white rounded-xl shadow-lg max-w-sm w-full mx-4 overflow-hidden">
-            <div class="bg-slate-900 text-white p-4 flex items-center justify-between">
-                <h3 class="font-bold text-sm">Adisyon İndirimi / İkramı</h3>
-                <button onclick="closeModal('discountModal')" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
-            </div>
-            <div class="p-4 space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">İndirim Türü</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button id="discountTypePercent" onclick="setDiscountType('percent')" class="py-2 text-xs font-semibold rounded-lg border border-indigo-500 bg-indigo-50 text-indigo-700 flex items-center justify-center space-x-1">
-                            <i class="bi bi-percent"></i> <span>Yüzdelik Oran</span>
-                        </button>
-                        <button id="discountTypeFlat" onclick="setDiscountType('flat')" class="py-2 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-600 flex items-center justify-center space-x-1">
-                            <span>TL Tutarı (₺)</span>
-                        </button>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">Değer / Miktar</label>
-                    <input type="number" id="discountValue" value="0" min="0" class="w-full text-sm border rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-            </div>
-            <div class="bg-slate-50 p-4 flex justify-end space-x-2 border-t">
-                <button onclick="closeModal('discountModal')" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-150 rounded-lg">İptal</button>
-                <button onclick="applyDiscount()" class="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg">Uygula</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. Ödeme Alma Modalı (Entegre Ödeme Kanalları) -->
-    <div id="paymentModal" class="fixed inset-0 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center z-50 hidden no-print">
-        <div class="bg-white rounded-xl shadow-lg max-w-md w-full mx-4 overflow-hidden">
-            <div class="bg-slate-900 text-white p-4 flex items-center justify-between">
-                <h3 class="font-bold text-sm">Hesap Tahsilatı</h3>
-                <button onclick="closeModal('paymentModal')" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
-            </div>
-            <div class="p-5 space-y-4">
-                <div class="bg-slate-50 p-4 rounded-lg flex items-center justify-between">
-                    <div>
-                        <p class="text-xs text-slate-500">Ödenecek Toplam Tutar</p>
-                        <h4 id="paymentTotalLabel" class="text-2xl font-bold text-slate-800">₺0,00</h4>
-                    </div>
-                    <span class="text-xs bg-amber-100 text-amber-800 font-bold px-2 py-1 rounded" id="paymentTableLabel">Masa 1</span>
-                </div>
-
-                <div class="space-y-2">
-                    <label class="block text-xs font-bold text-slate-500 uppercase">Ödeme Kanalı</label>
-                    <!-- Ödeme Seçenekleri Grid Düzeni -->
-                    <div class="grid grid-cols-4 gap-2">
-                        <!-- Nakit -->
-                        <button onclick="setPaymentType('cash')" id="payBtn-cash" class="py-2.5 border rounded-xl flex flex-col items-center justify-center space-y-1 transition text-slate-600 bg-slate-50 hover:border-slate-300">
-                            <i class="bi bi-cash text-base"></i>
-                            <span class="text-[9px] font-bold">Nakit</span>
-                        </button>
-                        <!-- Kredi Kartı -->
-                        <button onclick="setPaymentType('card')" id="payBtn-card" class="py-2.5 border rounded-xl flex flex-col items-center justify-center space-y-1 transition text-slate-600 bg-slate-50 hover:border-slate-300">
-                            <i class="bi bi-credit-card text-base"></i>
-                            <span class="text-[9px] font-bold">Kart</span>
-                        </button>
-                        <!-- Cari Hesap -->
-                        <button onclick="setPaymentType('cari')" id="payBtn-cari" class="py-2.5 border rounded-xl flex flex-col items-center justify-center space-y-1 transition text-slate-600 bg-slate-50 hover:border-slate-300">
-                            <i class="bi bi-person-badge text-base"></i>
-                            <span class="text-[9px] font-bold">Cari</span>
-                        </button>
-                        <!-- İkram -->
-                        <button onclick="setPaymentType('ikram')" id="payBtn-ikram" class="py-2.5 border rounded-xl flex flex-col items-center justify-center space-y-1 transition text-slate-600 bg-slate-50 hover:border-slate-300">
-                            <i class="bi bi-gift text-base"></i>
-                            <span class="text-[9px] font-bold">İkram</span>
-                        </button>
-                        <!-- Yemeksepeti -->
-                        <button onclick="setPaymentType('yemeksepeti')" id="payBtn-yemeksepeti" class="py-2.5 border rounded-xl flex flex-col items-center justify-center space-y-1 transition text-slate-600 bg-slate-50 hover:border-slate-300">
-                            <i class="bi bi-bicycle text-base"></i>
-                            <span class="text-[9px] font-bold">Y.Sepeti</span>
-                        </button>
-                        <!-- Getir -->
-                        <button onclick="setPaymentType('getir')" id="payBtn-getir" class="py-2.5 border rounded-xl flex flex-col items-center justify-center space-y-1 transition text-slate-600 bg-slate-50 hover:border-slate-300">
-                            <i class="bi bi-box-seam text-base"></i>
-                            <span class="text-[9px] font-bold">Getir</span>
-                        </button>
-                        <!-- Trendyol -->
-                        <button onclick="setPaymentType('trendyol')" id="payBtn-trendyol" class="py-2.5 border rounded-xl flex flex-col items-center justify-center space-y-1 transition text-slate-600 bg-slate-50 hover:border-slate-300">
-                            <i class="bi bi-truck text-base"></i>
-                            <span class="text-[9px] font-bold">Trendyol</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Nakit Ödeme Para Üstü Hesaplayıcı -->
-                <div id="cashReturnCalculation" class="space-y-3 pt-2">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1">Müşteriden Alınan Nakit</label>
-                        <div class="relative">
-                            <input type="number" id="cashReceivedInput" oninput="calculateChange()" placeholder="₺" class="w-full text-base font-bold border rounded-lg pl-8 pr-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            <span class="absolute left-3.5 top-2.5 text-slate-500 font-bold text-sm">₺</span>
-                        </div>
-                    </div>
-                    <div class="flex space-x-1.5 overflow-x-auto pb-1" id="quickCashButtons">
-                        <!-- JS otomatik ekleyecek -->
-                    </div>
-                    <div class="flex justify-between items-center bg-emerald-50 text-emerald-800 p-2.5 rounded-lg border border-emerald-100">
-                        <span class="text-xs font-bold">Para Üstü:</span>
-                        <span id="cashChangeLabel" class="text-base font-extrabold">₺0,00</span>
-                    </div>
-                </div>
-
-                <!-- Cari Hesap Seçim Alanı -->
-                <div id="cariSelectionArea" class="space-y-3 pt-2 hidden">
-                    <div class="p-3 bg-slate-50 rounded-lg border border-slate-100 space-y-2">
-                        <label class="block text-xs font-bold text-slate-600">Borçlandırılacak Cari Müşteri</label>
-                        <div class="flex gap-2">
-                            <select id="paymentCustomerSelect" class="flex-grow text-xs border rounded-lg p-2.5 bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                                <!-- Dinamik Cari Müşteriler -->
-                            </select>
-                            <button type="button" onclick="toggleQuickCustomerForm()" class="px-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-bold" title="Hızlı Cari Kart Ekle">+</button>
-                        </div>
-                        
-                        <!-- Hızlı Cari Müşteri Ekleme Formu -->
-                        <div id="quickCustomerForm" class="hidden border-t pt-2.5 mt-2.5 space-y-2">
-                            <p class="text-[11px] font-bold text-slate-700">Hızlı Müşteri Kartı Oluştur</p>
-                            <input type="text" id="quickCustName" placeholder="Müşteri Adı Soyadı" class="w-full text-xs border rounded p-2 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                            <input type="text" id="quickCustPhone" placeholder="Telefon (Opsiyonel)" class="w-full text-xs border rounded p-2 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                            <button type="button" onclick="saveQuickCustomer()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-semibold py-1.5 rounded">Müşteriyi Kaydet</button>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-            <div class="bg-slate-50 p-4 flex justify-end space-x-2 border-t">
-                <button onclick="closeModal('paymentModal')" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-150 rounded-lg">Kapat</button>
-                <button onclick="processPayment()" class="px-5 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm flex items-center space-x-1.5">
-                    <i class="bi bi-check2-circle text-sm"></i>
-                    <span>Tahsilatı Tamamla</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 4. Kategori Ekleme Modalı -->
-    <div id="addCategoryModal" class="fixed inset-0 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center z-50 hidden no-print">
-        <div class="bg-white rounded-xl shadow-lg max-w-sm w-full mx-4 overflow-hidden">
-            <div class="bg-slate-900 text-white p-4 flex items-center justify-between">
-                <h3 class="font-bold text-sm">Yeni Kategori Ekle</h3>
-                <button onclick="closeModal('addCategoryModal')" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
-            </div>
-            <div class="p-4 space-y-3">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">Kategori Adı</label>
-                    <input type="text" id="newCategoryName" placeholder="Örn: Tatlılar, Çorbalar" class="w-full text-sm border rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">İkon (Emoji)</label>
-                    <input type="text" id="newCategoryIcon" placeholder="Örn: 🍰, 🥣, 🍔" class="w-full text-sm border rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-            </div>
-            <div class="bg-slate-50 p-4 flex justify-end space-x-2 border-t">
-                <button onclick="closeModal('addCategoryModal')" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-150 rounded-lg">İptal</button>
-                <button onclick="saveNewCategory()" class="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg">Ekle</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 5. Ürün Ekleme / Düzenleme Modalı -->
-    <div id="addProductModal" class="fixed inset-0 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center z-50 hidden no-print">
-        <div class="bg-white rounded-xl shadow-lg max-w-sm w-full mx-4 overflow-hidden">
-            <div class="bg-slate-900 text-white p-4 flex items-center justify-between">
-                <h3 class="font-bold text-sm" id="productModalTitle">Yeni Ürün Ekle</h3>
-                <button onclick="closeModal('addProductModal')" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
-            </div>
-            <div class="p-4 space-y-3">
-                <input type="hidden" id="editProductId">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">Ürün Adı</label>
-                    <input type="text" id="productName" placeholder="Örn: Adana Kebap" class="w-full text-sm border rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1">Kategori</label>
-                        <select id="productCategory" class="w-full text-sm border rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            <!-- JS dolduracak -->
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1">Fiyat (₺)</label>
-                        <input type="number" id="productPrice" placeholder="0.00" step="0.01" class="w-full text-sm border rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">Açıklama</label>
-                    <textarea id="productDesc" rows="2" placeholder="Domates, biber ve sumaklı soğan eşliğinde" class="w-full text-sm border rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
-                </div>
-            </div>
-            <div class="bg-slate-50 p-4 flex justify-between items-center border-t">
-                <button id="deleteProductBtn" onclick="deleteProduct()" class="text-xs text-rose-500 hover:text-rose-700 font-semibold flex items-center space-x-1">
-                    <i class="bi bi-trash"></i> <span>Sil</span>
-                </button>
-                <div class="flex space-x-2">
-                    <button onclick="closeModal('addProductModal')" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-150 rounded-lg">İptal</button>
-                    <button onclick="saveProduct()" class="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg">Kaydet</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 6. Cari Hesap Kartı Ekleme Modalı (Raporlar sekmesi için) -->
-    <div id="addCustomerModal" class="fixed inset-0 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center z-50 hidden no-print">
-        <div class="bg-white rounded-xl shadow-lg max-w-sm w-full mx-4 overflow-hidden">
-            <div class="bg-slate-900 text-white p-4 flex items-center justify-between">
-                <h3 class="font-bold text-sm">Yeni Cari Müşteri Kartı Ekle</h3>
-                <button onclick="closeModal('addCustomerModal')" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
-            </div>
-            <div class="p-4 space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">Ad Soyadı / Ünvan</label>
-                    <input type="text" id="newCustomerName" placeholder="Örn: Ahmet Yılmaz" class="w-full text-sm border rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">Telefon Numarası</label>
-                    <input type="text" id="newCustomerPhone" placeholder="Örn: 0532 123 4567" class="w-full text-sm border rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-            </div>
-            <div class="bg-slate-50 p-4 flex justify-end space-x-2 border-t">
-                <button onclick="closeModal('addCustomerModal')" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-150 rounded-lg">İptal</button>
-                <button onclick="saveNewCustomer()" class="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg">Kaydet</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 7. Cari Tahsilat Modalı -->
-    <div id="tahsilatModal" class="fixed inset-0 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center z-50 hidden no-print">
-        <div class="bg-white rounded-xl shadow-lg max-w-sm w-full mx-4 overflow-hidden">
-            <div class="bg-slate-900 text-white p-4 flex items-center justify-between">
-                <h3 class="font-bold text-sm">Cari Tahsilat Yap</h3>
-                <button onclick="closeModal('tahsilatModal')" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
-            </div>
-            <div class="p-4 space-y-4">
-                <input type="hidden" id="tahsilatCustomerId">
-                <div class="bg-slate-50 p-3 rounded-lg">
-                    <p class="text-xs text-slate-500">Borçlu Cari:</p>
-                    <h4 id="tahsilatCustomerName" class="text-sm font-bold text-slate-800">-</h4>
-                    <p class="text-xs text-slate-500 mt-1.5">Mevcut Toplam Borç:</p>
-                    <h4 id="tahsilatCustomerBalance" class="text-base font-extrabold text-rose-600">₺0,00</h4>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">Tahsil Edilen Miktar (₺)</label>
-                    <input type="number" id="tahsilatAmount" placeholder="0.00" step="0.01" class="w-full text-sm border rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">Tahsilat Türü</label>
-                    <select id="tahsilatMethod" class="w-full text-sm border rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                        <option value="cash">Nakit</option>
-                        <option value="card">Kredi Kartı</option>
-                    </select>
-                </div>
-            </div>
-            <div class="bg-slate-50 p-4 flex justify-end space-x-2 border-t">
-                <button onclick="closeModal('tahsilatModal')" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-150 rounded-lg">İptal</button>
-                <button onclick="processTahsilat()" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg">Tahsilat Yap</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 8. Yazdırılabilir Fiş Şablonu (Gizli, sadece yazdırma esnasında görünür) -->
-    <div id="printArea" class="print-only p-6 bg-white text-black font-mono max-w-[320px] mx-auto text-xs border border-dashed border-slate-300">
-        <div class="text-center space-y-1 mb-4">
-            <h2 class="text-base font-bold">NRUS ADISYON PRO RESTORAN</h2>
-            <p>Akkent Mah. 2357. Sok. No: 52/B</p>
-            <p>Tel: 0 531 990 31 33</p>
-            <div class="border-b border-black my-2"></div>
-            <h3 class="font-bold text-sm" id="printTitle">ADISYON FIŞI</h3>
-        </div>
-        <div class="space-y-1 mb-3">
-            <div class="flex justify-between"><span>Masa:</span><span id="printTableCode" class="font-bold">Masa 1</span></div>
-            <div class="flex justify-between"><span>Tarih:</span><span id="printDate">10.06.2026</span></div>
-            <div class="flex justify-between"><span>Saat:</span><span id="printTime">12:00</span></div>
-        </div>
-        <div class="border-b border-dashed border-black my-2"></div>
-        <table class="w-full text-left">
-            <thead>
-                <tr class="border-b border-black">
-                    <th class="pb-1">Ürün</th>
-                    <th class="pb-1 text-center">Adet</th>
-                    <th class="pb-1 text-right">Tutar</th>
-                </tr>
-            </thead>
-            <tbody id="printBillItems">
-                <!-- JS tarafından doldurulacak -->
-            </tbody>
-        </table>
-        <div class="border-b border-dashed border-black my-2"></div>
-        <div class="space-y-1 text-right font-bold">
-            <div class="flex justify-between"><span>Ara Toplam:</span><span id="printSubtotal">₺0,00</span></div>
-            <div class="flex justify-between text-rose-700"><span>İndirim:</span><span id="printDiscount">-₺0,00</span></div>
-            <div class="flex justify-between text-base"><span>GENEL TOPLAM:</span><span id="printTotal">₺0,00</span></div>
-        </div>
-        <div class="text-center mt-6 pt-4 border-t border-black border-dashed">
-            <p>Bizi Tercih Ettiğiniz İçin Teşekkür Ederiz!</p>
-            <p class="text-[9px] mt-2">NruS Adisyon Pro Sisteminden Basılmıştır.</p>
-        </div>
-    </div>
-
-
-    <!-- ================= JAVASCRIPT KODU ================= -->
-    <script>
-        // --- BAŞLANGIÇ VERİLERİ (TÜRKÇE İSİMLERLE MENÜ & MASALAR) ---
-        const defaultCategories = [
-            { id: "cat-1", name: "Ana Yemekler", icon: "🍖" },
-            { id: "cat-2", name: "Çorbalar", icon: "🥣" },
-            { id: "cat-3", name: "Mezeler & Salatalar", icon: "🥗" },
-            { id: "cat-4", name: "Tatlılar", icon: "🍰" },
-            { id: "cat-5", name: "Sıcak İçecekler", icon: "☕" },
-            { id: "cat-6", name: "Soğuk İçecekler", icon: "🥤" }
-        ];
-
-        const defaultProducts = [
-            { id: "prod-1", name: "Adana Kebap", price: 240, categoryId: "cat-1", desc: "Zırh kıyması, közlenmiş biber ve soğan ile" },
-            { id: "prod-2", name: "Tavuk Şiş", price: 180, categoryId: "cat-1", desc: "Marine edilmiş tavuk göğsü, pilav ile" },
-            { id: "prod-3", name: "Mercimek Çorbası", price: 80, categoryId: "cat-2", desc: "Tereyağlı sos ve kıtır ekmek ile" },
-            { id: "prod-4", name: "Ezogelin Çorbası", price: 80, categoryId: "cat-2", desc: "Limon dilimi ile sıcak servis" },
-            { id: "prod-5", name: "Humus", price: 90, categoryId: "cat-3", desc: "Tahin, zeytinyağı ve kimyonlu sıcak humus" },
-            { id: "prod-6", name: "Çoban Salatası", price: 85, categoryId: "cat-3", desc: "Taze sebzeler ve nar ekşili zeytinyağı" },
-            { id: "prod-7", name: "Künefe", price: 130, categoryId: "cat-4", desc: "Antep fıstıklı sıcak şerbetli tatlı" },
-            { id: "prod-8", name: "Fırın Sütlaç", price: 95, categoryId: "cat-4", desc: "Fındık kırığı süslemesi ile" },
-            { id: "prod-9", name: "Türk Kahvesi", price: 55, categoryId: "cat-5", desc: "Su ve lokum ikramı ile" },
-            { id: "prod-10", name: "Çay (Bardak)", price: 20, categoryId: "cat-5", desc: "Demleme taze Türk çayı" },
-            { id: "prod-11", name: "Ayran", price: 35, categoryId: "cat-6", desc: "Ev yapımı yayık ayranı" },
-            { id: "prod-12", name: "Kutu Kola", price: 45, categoryId: "cat-6", desc: "Soğuk kutu içecek" }
-        ];
-
-        const defaultTables = [
-            { id: "tab-1", name: "Masa 1", area: "Giriş Kat", status: "empty", capacity: 4, orders: [], checkInTime: null, discount: { type: 'percent', value: 0 } },
-            { id: "tab-2", name: "Masa 2", area: "Giriş Kat", status: "empty", capacity: 2, orders: [], checkInTime: null, discount: { type: 'percent', value: 0 } },
-            { id: "tab-3", name: "Masa 3", area: "Giriş Kat", status: "empty", capacity: 4, orders: [], checkInTime: null, discount: { type: 'percent', value: 0 } },
-            { id: "tab-4", name: "Bahçe 1", area: "Bahçe", status: "empty", capacity: 6, orders: [], checkInTime: null, discount: { type: 'percent', value: 0 } },
-            { id: "tab-5", name: "Bahçe 2", area: "Bahçe", status: "empty", capacity: 4, orders: [], checkInTime: null, discount: { type: 'percent', value: 0 } },
-            { id: "tab-6", name: "Teras 1", area: "Teras", status: "empty", capacity: 4, orders: [], checkInTime: null, discount: { type: 'percent', value: 0 } },
-            { id: "tab-7", name: "VIP 1", area: "VIP", status: "empty", capacity: 8, orders: [], checkInTime: null, discount: { type: 'percent', value: 0 } }
-        ];
-
-        const defaultCustomers = [
-            { id: "cust-1", name: "Ahmet Yılmaz (Cari)", phone: "0532 111 2233", balance: 1420 },
-            { id: "cust-2", name: "Özkan Gıda Ltd.", phone: "0542 444 5566", balance: 0 },
-            { id: "cust-3", name: "Mehmet Demir", phone: "0555 777 8899", balance: 350 }
-        ];
-
-        // --- DEVLET YÖNETİMİ / STATE ---
-        let categories = JSON.parse(localStorage.getItem('adPro_categories')) || defaultCategories;
-        let products = JSON.parse(localStorage.getItem('adPro_products')) || defaultProducts;
-        let tables = JSON.parse(localStorage.getItem('adPro_tables')) || defaultTables;
-        let completedBills = JSON.parse(localStorage.getItem('adPro_bills')) || [];
-        let customers = JSON.parse(localStorage.getItem('adPro_customers')) || defaultCustomers;
-
-        let currentActiveTab = 'tables';
-        let selectedTableId = null;
-        let activeMenuCategory = 'all';
-        let tableFilter = 'all';
-        let currentDiscountType = 'percent';
-        let currentPaymentType = 'cash';
-
-        // --- SAYFA YÜKLEME VE TETİKLEME ---
-        window.onload = function() {
-            // Saat ve Tarih Başlat
-            updateTime();
-            setInterval(updateTime, 1000);
-
-            // Verileri Yükle ve Arayüzü Çiz
-            renderTables();
-            renderMenuCategories();
-            renderMenuItems();
-            renderQuickMenu();
-            renderReports();
-            renderCariCustomers();
-
-            // İlk sekme
-            switchTab('tables');
-        };
-
-        function saveData() {
-            localStorage.setItem('adPro_categories', JSON.stringify(categories));
-            localStorage.setItem('adPro_products', JSON.stringify(products));
-            localStorage.setItem('adPro_tables', JSON.stringify(tables));
-            localStorage.setItem('adPro_bills', JSON.stringify(completedBills));
-            localStorage.setItem('adPro_customers', JSON.stringify(customers));
-            renderReports();
-            renderCariCustomers();
-            renderManageTables();
-        }
-
-        // --- ÖZEL MODAL SİSTEMİ (STANDART CONFIRM / ALERT YERİNE) ---
-        function showCustomAlert(message, title = "Sistem Uyarısı", type = "warning") {
-            const modal = document.getElementById('customAlertModal');
-            const titleEl = document.getElementById('customAlertTitle');
-            const msgEl = document.getElementById('customAlertMessage');
-            const headerEl = document.getElementById('customAlertHeader');
-            const iconEl = document.getElementById('customAlertIcon');
-            const btnContainer = document.getElementById('customAlertButtons');
-
-            titleEl.textContent = title;
-            msgEl.textContent = message;
-
-            if (type === "danger") {
-                headerEl.className = "bg-rose-900 text-white p-4 flex items-center space-x-2";
-                iconEl.className = "bi bi-x-circle-fill text-white text-lg";
-            } else if (type === "success") {
-                headerEl.className = "bg-emerald-900 text-white p-4 flex items-center space-x-2";
-                iconEl.className = "bi bi-check-circle-fill text-white text-lg";
-            } else {
-                headerEl.className = "bg-slate-900 text-white p-4 flex items-center space-x-2";
-                iconEl.className = "bi bi-exclamation-triangle-fill text-amber-500 text-lg";
-            }
-
-            btnContainer.innerHTML = `
-                <button onclick="closeModal('customAlertModal')" class="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg">Tamam</button>
-            `;
-            modal.classList.remove('hidden');
-        }
-
-        function showCustomConfirm(message, onConfirm, title = "Onay Gerekli") {
-            const modal = document.getElementById('customAlertModal');
-            const titleEl = document.getElementById('customAlertTitle');
-            const msgEl = document.getElementById('customAlertMessage');
-            const headerEl = document.getElementById('customAlertHeader');
-            const iconEl = document.getElementById('customAlertIcon');
-            const btnContainer = document.getElementById('customAlertButtons');
-
-            titleEl.textContent = title;
-            msgEl.textContent = message;
-            headerEl.className = "bg-slate-900 text-white p-4 flex items-center space-x-2";
-            iconEl.className = "bi bi-question-circle-fill text-amber-500 text-lg";
-
-            btnContainer.innerHTML = `
-                <button onclick="closeModal('customAlertModal')" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg">İptal</button>
-                <button id="customConfirmYesBtn" class="px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-lg">Evet, Onayla</button>
-            `;
-
-            document.getElementById('customConfirmYesBtn').onclick = function() {
-                closeModal('customAlertModal');
-                onConfirm();
-            };
-
-            modal.classList.remove('hidden');
-        }
-
-        // --- SAAT & TARİH GÜNCELLEME ---
-        function updateTime() {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('tr-TR', { hour12: false });
-            const dateStr = now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
-            
-            document.getElementById('liveClock').textContent = timeStr;
-            document.getElementById('liveDate').textContent = dateStr;
-        }
-
-        // --- SEKME / TAB YÖNETİMİ ---
-        function switchTab(tabId) {
-            currentActiveTab = tabId;
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('bg-amber-500', 'text-slate-950');
-                btn.classList.add('hover:bg-slate-800', 'text-slate-300');
-            });
-            const activeBtn = document.getElementById(`tabBtn-${tabId}`);
-            activeBtn.classList.remove('hover:bg-slate-800', 'text-slate-300');
-            activeBtn.classList.add('bg-amber-500', 'text-slate-950');
-
-            if (tabId === 'tables') {
-                renderTables();
-            } else if (tabId === 'menu') {
-                renderMenuCategories();
-                renderMenuItems();
-            } else if (tabId === 'report') {
-                renderReports();
-                renderCariCustomers();
-                renderManageTables();
-            }
-        }
-
-        // --- MASALAR SEKMESİ İŞLEMLERİ ---
-        function renderTables() {
-            const grid = document.getElementById('tablesGrid');
-            grid.innerHTML = '';
-
-            let filtered = tables;
-            if (tableFilter === 'empty') filtered = tables.filter(t => t.status === 'empty');
-            if (tableFilter === 'active') filtered = tables.filter(t => t.status === 'active');
-            if (tableFilter === 'billing') filtered = tables.filter(t => t.status === 'billing');
-
-            filtered.forEach(table => {
-                let statusBg = 'bg-white border-slate-100 hover:border-slate-300';
-                let badge = '<span class="px-2 py-0.5 text-[9px] font-bold rounded bg-slate-100 text-slate-600">BOŞ</span>';
-                let totalTutar = calculateTableTotal(table);
-
-                if (table.status === 'active') {
-                    statusBg = 'bg-amber-50/80 border-amber-200 hover:border-amber-400';
-                    badge = '<span class="px-2 py-0.5 text-[9px] font-bold rounded bg-amber-500 text-slate-950">DOLU</span>';
-                } else if (table.status === 'billing') {
-                    statusBg = 'bg-rose-50 border-rose-200 hover:border-rose-400 animate-pulse';
-                    badge = '<span class="px-2 py-0.5 text-[9px] font-bold rounded bg-rose-500 text-white">HESAP</span>';
-                }
-
-                const cardSelectedClass = selectedTableId === table.id ? 'ring-2 ring-indigo-600' : '';
-
-                const ordersCount = table.orders.reduce((acc, curr) => acc + curr.quantity, 0);
-
-                const cardHtml = `
-                    <div onclick="selectTable('${table.id}')" class="p-4 rounded-xl shadow-sm border ${statusBg} ${cardSelectedClass} cursor-pointer transition flex flex-col justify-between h-[120px]">
-                        <div class="flex items-start justify-between">
                             <div>
-                                <span class="text-[10px] text-slate-400 font-semibold block">${table.area}</span>
-                                <h4 class="font-bold text-slate-800 text-sm leading-tight">${table.name}</h4>
+                                <span class="block text-sm font-bold text-slate-800">Premium Özellikler</span>
+                                <span class="block text-xs text-brand-600 font-medium">Aktif</span>
                             </div>
-                            ${badge}
-                        </div>
-                        <div class="flex items-end justify-between mt-2">
-                            <span class="text-xs text-slate-400"><i class="bi bi-people"></i> ${ordersCount > 0 ? table.capacity : '0/' + table.capacity}</span>
-                            <span class="text-xs font-bold text-slate-700">${totalTutar > 0 ? '₺' + totalTutar.toFixed(2) : '-'}</span>
                         </div>
                     </div>
-                `;
-                grid.innerHTML += cardHtml;
-            });
-        }
 
-        function filterTables(filter) {
-            tableFilter = filter;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('bg-slate-100', 'text-slate-800', 'border-slate-200');
-                btn.classList.add('bg-slate-50', 'text-slate-600', 'border-transparent');
-            });
-            const activeBtn = document.getElementById(`filter-${filter}`);
-            activeBtn.classList.remove('bg-slate-50', 'text-slate-600', 'border-transparent');
-            activeBtn.classList.add('bg-slate-100', 'text-slate-800', 'border-slate-200');
-            renderTables();
-        }
+                    <!-- Export -->
+                    <div class="p-5 border-b border-slate-100 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors" onclick="exportData()">
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center">
+                                <i class="fa-solid fa-file-export"></i>
+                            </div>
+                            <span class="text-sm font-bold text-slate-700">Verileri Dışa Aktar (JSON)</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                    </div>
+                    
+                    <!-- Version -->
+                    <div class="p-5 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center">
+                                <i class="fa-solid fa-info"></i>
+                            </div>
+                            <span class="text-sm font-bold text-slate-700">Uygulama Sürümü</span>
+                        </div>
+                        <span class="text-xs font-bold text-slate-400">v2.0 Premium</span>
+                    </div>
+                </div>
+                
+                <!-- Danger Zone -->
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-8 mb-4 px-1">Tehlikeli Alan</h3>
+                <div class="bg-white rounded-3xl shadow-soft overflow-hidden">
+                    <div class="p-5 flex items-center justify-between cursor-pointer hover:bg-rose-50 transition-colors group" onclick="openModal('clearAll')">
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center group-hover:bg-rose-500 group-hover:text-white transition-colors">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </div>
+                            <span class="text-sm font-bold text-rose-500">Tüm Verileri Sıfırla</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
 
-        function selectTable(id) {
-            selectedTableId = id;
-            renderTables();
-
-            const table = tables.find(t => t.id === id);
-            
-            // Paneli Doldur
-            document.getElementById('noSelectedTable').classList.add('hidden');
-            document.getElementById('activeTablePanel').classList.remove('hidden');
-
-            document.getElementById('panelTableCode').textContent = table.name;
-            document.getElementById('panelTableName').textContent = `${table.area} - Kapasite: ${table.capacity} Kişi`;
-            document.getElementById('panelTableTime').textContent = table.checkInTime ? `Giriş: ${table.checkInTime}` : 'Durum: Boş';
-            document.getElementById('activeTableCapacity').textContent = table.capacity;
-            document.getElementById('activeTableStatus').value = table.status;
-
-            // Masa Boş ve Sipariş Yoksa Masa Silme Butonunu Göster
-            const deleteContainer = document.getElementById('panelDeleteTableContainer');
-            if (table.orders.length === 0 && table.status === 'empty') {
-                deleteContainer.innerHTML = `
-                    <button onclick="deleteTable('${table.id}')" class="bg-rose-600 hover:bg-rose-700 text-white rounded p-1 text-xs font-semibold flex items-center space-x-1" title="Masayı Sistemden Sil">
-                        <i class="bi bi-trash-fill"></i>
-                        <span class="text-[9px]">Masayı Sil</span>
+        <!-- Bottom Navigation (Glassmorphic) -->
+        <nav class="glass-nav absolute bottom-0 w-full z-20 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+            <div class="flex justify-around items-center px-2 py-2">
+                <!-- Dashboard Nav -->
+                <button onclick="switchTab('genel')" id="nav-genel" class="nav-btn text-brand-600 flex-1 flex flex-col items-center justify-center py-2 gap-1.5 transition-colors">
+                    <i class="fa-solid fa-layer-group text-xl mb-0.5"></i>
+                    <span class="text-[9px] font-extrabold uppercase tracking-widest">Özet</span>
+                </button>
+                
+                <!-- Add Transaction Nav (Floating FAB) -->
+                <div class="relative flex-1 flex justify-center">
+                    <button onclick="switchTab('islem')" id="nav-islem" class="absolute -top-8 w-16 h-16 bg-dark rounded-full text-white flex items-center justify-center shadow-floating border-4 border-surface hover:scale-105 active:scale-95 transition-all">
+                        <i class="fa-solid fa-plus text-2xl"></i>
                     </button>
-                `;
-            } else {
-                deleteContainer.innerHTML = '';
+                </div>
+                
+                <!-- Settings Nav -->
+                <button onclick="switchTab('ayarlar')" id="nav-ayarlar" class="nav-btn text-slate-400 flex-1 flex flex-col items-center justify-center py-2 gap-1.5 transition-colors hover:text-slate-600">
+                    <i class="fa-solid fa-gear text-xl mb-0.5"></i>
+                    <span class="text-[9px] font-extrabold uppercase tracking-widest">Ayarlar</span>
+                </button>
+            </div>
+            <!-- iOS Safe Area Spacer -->
+            <div class="h-5"></div>
+        </nav>
+
+        <!-- Custom Modal (Delete/Clear Confirmation) -->
+        <div id="modal-overlay" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 opacity-0 transition-opacity duration-300">
+            <div id="modal-content" class="bg-white w-5/6 max-w-sm rounded-3xl p-6 shadow-2xl transform scale-95 opacity-0 transition-all duration-300">
+                <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-center text-dark mb-2" id="modal-title">Emin misiniz?</h3>
+                <p class="text-center text-slate-500 text-sm mb-6" id="modal-desc">Bu işlem geri alınamaz.</p>
+                <div class="flex gap-3">
+                    <button onclick="closeModal()" class="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-colors">İptal</button>
+                    <button id="modal-confirm-btn" class="flex-1 py-3 bg-rose-500 text-white rounded-xl font-bold shadow-soft hover:bg-rose-600 transition-colors">Sil</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Premium Toast Notification -->
+        <div id="toast" class="fixed top-6 left-1/2 transform -translate-x-1/2 bg-dark/90 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-floating text-sm font-semibold transition-all duration-300 -translate-y-20 opacity-0 pointer-events-none z-50 flex items-center gap-3">
+            <i id="toast-icon" class="fa-solid fa-check-circle text-brand-400"></i>
+            <span id="toast-message">Mesaj</span>
+        </div>
+
+    </div>
+
+    <script>
+        // State management
+        let transactions = [];
+        let itemToDelete = null;
+        let deleteActionType = ''; // 'single' or 'all'
+
+        // Display current date in header
+        const dateOptions = { weekday: 'long', day: 'numeric', month: 'long' };
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('tr-TR', dateOptions);
+
+        // Load data on startup
+        function loadData() {
+            const savedData = localStorage.getItem('ciroPremiumData');
+            if (savedData) {
+                try {
+                    transactions = JSON.parse(savedData);
+                } catch (e) {
+                    console.error("Veri okuma hatası", e);
+                    transactions = [];
+                }
             }
-
-            renderActiveOrderItems(table);
-            renderQuickMenu();
+            updateDashboard();
         }
 
-        // --- MASA SİLME FONKSİYONU ---
-        function deleteTable(id) {
-            const table = tables.find(t => t.id === id);
-            if (!table) return;
-
-            showCustomConfirm(
-                `${table.name} isimli masayı sistemden tamamen silmek istediğinizden emin misiniz?`,
-                function() {
-                    tables = tables.filter(t => t.id !== id);
-                    saveData();
-                    deselectTable();
-                    renderTables();
-                },
-                "Masa Silme Onayı"
-            );
+        // Save data
+        function saveData() {
+            localStorage.setItem('ciroPremiumData', JSON.stringify(transactions));
+            updateDashboard();
         }
 
-        function deselectTable() {
-            selectedTableId = null;
-            document.getElementById('activeTablePanel').classList.add('hidden');
-            document.getElementById('noSelectedTable').classList.remove('hidden');
-            renderTables();
+        // Formatting utilities
+        function formatMoney(amount) {
+            return new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount) + ' ₺';
         }
 
-        // --- ADİSYON SATIRLARINI ÇİZME ---
-        function renderActiveOrderItems(table) {
-            const list = document.getElementById('orderItemsList');
-            list.innerHTML = '';
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute:'2-digit' });
+        }
+        
+        function formatDateStr(dateString) {
+             const date = new Date(dateString);
+             return date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
+        }
 
-            if (table.orders.length === 0) {
-                list.innerHTML = `
-                    <div class="flex flex-col items-center justify-center py-12 text-slate-400">
-                        <i class="bi bi-cart-x text-2xl mb-1"></i>
-                        <p class="text-[11px]">Sipariş bulunmuyor.</p>
-                    </div>
-                `;
-                document.getElementById('panelSubtotal').textContent = '₺0,00';
-                document.getElementById('panelDiscount').textContent = '-₺0,00';
-                document.getElementById('panelTotal').textContent = '₺0,00';
+        // Premium Toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            
+            document.getElementById('toast-message').textContent = message;
+            
+            if(type === 'error') {
+                icon.className = 'fa-solid fa-circle-exclamation text-rose-400';
+            } else {
+                icon.className = 'fa-solid fa-check-circle text-brand-400';
+            }
+            
+            toast.classList.remove('-translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('-translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            
+            // Add tiny delay for animation
+            setTimeout(() => {
+                document.getElementById('tab-' + tabId).classList.add('active');
+            }, 50);
+
+            // Update Nav Icons colors
+            document.getElementById('nav-genel').classList.replace('text-brand-600', 'text-slate-400');
+            document.getElementById('nav-ayarlar').classList.replace('text-brand-600', 'text-slate-400');
+            
+            if(tabId !== 'islem') {
+                document.getElementById('nav-' + tabId).classList.replace('text-slate-400', 'text-brand-600');
+            }
+        }
+
+        // Custom Segmented Control (Income/Expense toggler)
+        function setTransactionType(type) {
+            document.getElementById('trans-type').value = type;
+            const bg = document.getElementById('segment-bg');
+            const btnInc = document.getElementById('btn-type-income');
+            const btnExp = document.getElementById('btn-type-expense');
+
+            if (type === 'income') {
+                bg.style.transform = 'translateX(0)';
+                btnInc.classList.add('text-success');
+                btnInc.classList.remove('text-slate-400');
+                btnExp.classList.add('text-slate-400');
+                btnExp.classList.remove('text-danger');
+            } else {
+                bg.style.transform = 'translateX(100%)';
+                btnExp.classList.add('text-danger');
+                btnExp.classList.remove('text-slate-400');
+                btnInc.classList.add('text-slate-400');
+                btnInc.classList.remove('text-success');
+            }
+        }
+
+        // Handle form submit
+        document.getElementById('transaction-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const type = document.getElementById('trans-type').value;
+            const amountInput = document.getElementById('trans-amount').value;
+            const amount = parseFloat(amountInput.replace(',', '.')); // Handle comma inputs just in case
+            
+            let categoryText = document.getElementById('trans-category').value;
+            // Clean category text (remove emoji)
+            let category = categoryText.replace(/[^a-zA-ZğüşıöçĞÜŞİÖÇ]/g, '').trim(); 
+            if(categoryText.includes("EFT")) category = "EFT"; // Edge case fixing
+            
+            const desc = document.getElementById('trans-desc').value || category;
+            
+            if (isNaN(amount) || amount <= 0) {
+                showToast('Geçerli bir tutar giriniz.', 'error');
                 return;
             }
 
-            table.orders.forEach((order, index) => {
-                const subT = order.price * order.quantity;
-                const noteBadge = order.note ? `<div class="text-[10px] text-amber-600 font-medium bg-amber-50 px-1.5 py-0.5 rounded mt-0.5">Not: ${order.note}</div>` : '';
+            transactions.unshift({
+                id: Date.now().toString(),
+                type: type,
+                amount: amount,
+                category: category,
+                description: desc,
+                date: new Date().toISOString()
+            });
+
+            saveData();
+            showToast('İşlem başarıyla eklendi');
+            
+            this.reset();
+            setTransactionType('income');
+            setTimeout(() => switchTab('genel'), 300);
+        });
+
+        // Get styled icon HTML based on category
+        function getCategoryIconHTML(category) {
+            let iconClass, bgClass, colorClass;
+            
+            switch(category) {
+                case 'Nakit': 
+                    iconClass = 'fa-money-bill-wave'; bgClass = 'bg-emerald-100'; colorClass = 'text-emerald-500'; break;
+                case 'Havale': 
+                    iconClass = 'fa-building-columns'; bgClass = 'bg-blue-100'; colorClass = 'text-blue-500'; break;
+                case 'EFT': 
+                    iconClass = 'fa-bolt'; bgClass = 'bg-amber-100'; colorClass = 'text-amber-500'; break;
+                case 'Yakıt': 
+                    iconClass = 'fa-gas-pump'; bgClass = 'bg-purple-100'; colorClass = 'text-purple-500'; break;
+                default: 
+                    iconClass = 'fa-box-open'; bgClass = 'bg-slate-100'; colorClass = 'text-slate-500'; break;
+            }
+            return `<div class="w-12 h-12 rounded-2xl ${bgClass} ${colorClass} flex items-center justify-center text-lg shadow-inner"><i class="fa-solid ${iconClass}"></i></div>`;
+        }
+
+        // Update Dashboard
+        function updateDashboard() {
+            let totalIncome = 0;
+            let totalExpense = 0;
+            const listContainer = document.getElementById('transactions-list');
+            const emptyState = document.getElementById('empty-state');
+            
+            listContainer.innerHTML = ''; 
+
+            if (transactions.length === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
                 
-                const itemHtml = `
-                    <div class="flex flex-col pb-2.5 border-b border-slate-100">
-                        <div class="flex items-start justify-between">
-                            <div class="flex-grow pr-2">
-                                <h5 class="text-xs font-semibold text-slate-700 leading-tight">${order.productName}</h5>
-                                <p class="text-[10px] text-slate-400">₺${order.price.toFixed(2)} / Adet</p>
-                                ${noteBadge}
+                transactions.forEach((t, index) => {
+                    if (t.type === 'income') totalIncome += t.amount;
+                    if (t.type === 'expense') totalExpense += t.amount;
+
+                    const isIncome = t.type === 'income';
+                    const amountColor = isIncome ? 'text-success' : 'text-dark';
+                    const amountSign = isIncome ? '+' : '-';
+                    const iconHTML = getCategoryIconHTML(t.category);
+                    
+                    // Staggered animation delay
+                    const delay = Math.min(index * 0.05, 0.5);
+
+                    const itemHtml = `
+                        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-50 flex items-center justify-between list-item-enter" style="animation-delay: ${delay}s; opacity:0;">
+                            <div class="flex items-center gap-4">
+                                ${iconHTML}
+                                <div>
+                                    <p class="text-sm font-bold text-dark mb-0.5">${t.description}</p>
+                                    <div class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400">
+                                        <span>${t.category}</span>
+                                        <span class="w-1 h-1 rounded-full bg-slate-300"></span>
+                                        <span>${formatDateStr(t.date)} ${formatTime(t.date)}</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="flex items-center space-x-2">
-                                <div class="flex items-center space-x-1.5 bg-slate-50 rounded-lg border p-0.5">
-                                    <button onclick="adjustOrderItemQty('${table.id}', ${index}, -1)" class="w-5 h-5 rounded text-xs font-bold text-slate-500 hover:bg-slate-200 flex items-center justify-center">-</button>
-                                    <span class="text-xs font-bold w-5 text-center">${order.quantity}</span>
-                                    <button onclick="adjustOrderItemQty('${table.id}', ${index}, 1)" class="w-5 h-5 rounded text-xs font-bold text-slate-500 hover:bg-slate-200 flex items-center justify-center">+</button>
-                                </div>
-                                <div class="text-right w-16">
-                                    <span class="text-xs font-bold text-slate-800">₺${subT.toFixed(2)}</span>
-                                </div>
-                                <button onclick="deleteOrderItem('${table.id}', ${index})" class="text-rose-400 hover:text-rose-600 transition">
-                                    <i class="bi bi-trash text-sm"></i>
+                            <div class="flex flex-col items-end gap-1.5">
+                                <span class="font-black ${amountColor}">${amountSign}${formatMoney(t.amount).replace('₺','')}</span>
+                                <button onclick="openModal('single', '${t.id}')" class="w-6 h-6 rounded-full bg-slate-50 text-slate-300 hover:bg-rose-50 hover:text-rose-500 flex items-center justify-center transition-colors">
+                                    <i class="fa-solid fa-xmark text-xs"></i>
                                 </button>
                             </div>
                         </div>
-                    </div>
-                `;
-                list.innerHTML += itemHtml;
-            });
-
-            // Tutarları Güncelle
-            let subtotal = table.orders.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0);
-            let discountValue = 0;
-            if (table.discount.type === 'percent') {
-                discountValue = (subtotal * table.discount.value) / 100;
-            } else {
-                discountValue = table.discount.value;
-            }
-            if (discountValue > subtotal) discountValue = subtotal;
-
-            const total = subtotal - discountValue;
-
-            document.getElementById('panelSubtotal').textContent = `₺${subtotal.toFixed(2)}`;
-            document.getElementById('panelDiscount').textContent = `-₺${discountValue.toFixed(2)}`;
-            document.getElementById('panelTotal').textContent = `₺${total.toFixed(2)}`;
-        }
-
-        // --- SİPARİŞ ADET & NOT AYARLARI ---
-        function adjustOrderItemQty(tableId, index, amount) {
-            const table = tables.find(t => t.id === tableId);
-            const order = table.orders[index];
-            order.quantity += amount;
-            if (order.quantity <= 0) {
-                table.orders.splice(index, 1);
-            }
-            if (table.orders.length === 0) {
-                table.status = 'empty';
-                table.checkInTime = null;
-            }
-            saveData();
-            renderActiveOrderItems(table);
-            renderTables();
-            selectTable(tableId);
-        }
-
-        function deleteOrderItem(tableId, index) {
-            const table = tables.find(t => t.id === tableId);
-            table.orders.splice(index, 1);
-            if (table.orders.length === 0) {
-                table.status = 'empty';
-                table.checkInTime = null;
-            }
-            saveData();
-            renderActiveOrderItems(table);
-            renderTables();
-            selectTable(tableId);
-        }
-
-        function clearActiveOrders() {
-            showCustomConfirm(
-                'Adisyondaki tüm ürünleri silmek istediğinizden emin misiniz?',
-                function() {
-                    const table = tables.find(t => t.id === selectedTableId);
-                    table.orders = [];
-                    table.status = 'empty';
-                    table.checkInTime = null;
-                    table.discount = { type: 'percent', value: 0 };
-                    saveData();
-                    renderActiveOrderItems(table);
-                    renderTables();
-                    selectTable(selectedTableId);
-                },
-                "Adisyonu Temizleme"
-            );
-        }
-
-        function adjustCapacity(amount) {
-            const table = tables.find(t => t.id === selectedTableId);
-            table.capacity += amount;
-            if (table.capacity < 1) table.capacity = 1;
-            saveData();
-            selectTable(selectedTableId);
-        }
-
-        function changeTableStatus(status) {
-            const table = tables.find(t => t.id === selectedTableId);
-            table.status = status;
-            if (status !== 'empty' && !table.checkInTime) {
-                const now = new Date();
-                table.checkInTime = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-            } else if (status === 'empty') {
-                table.checkInTime = null;
-                table.orders = [];
-            }
-            saveData();
-            renderTables();
-            selectTable(selectedTableId);
-        }
-
-        function addOrderToTable(prodId) {
-            if (!selectedTableId) return;
-            const table = tables.find(t => t.id === selectedTableId);
-            const product = products.find(p => p.id === prodId);
-
-            // Eğer masa boşsa durumunu aktifleştir
-            if (table.status === 'empty') {
-                table.status = 'active';
-                const now = new Date();
-                table.checkInTime = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-            }
-
-            // Zaten var mı kontrol et
-            const existingOrderIndex = table.orders.findIndex(o => o.productId === prodId);
-            if (existingOrderIndex > -1) {
-                table.orders[existingOrderIndex].quantity += 1;
-            } else {
-                table.orders.push({
-                    productId: prodId,
-                    productName: product.name,
-                    price: product.price,
-                    quantity: 1,
-                    note: ""
+                    `;
+                    listContainer.insertAdjacentHTML('beforeend', itemHtml);
                 });
             }
 
-            saveData();
-            renderActiveOrderItems(table);
-            renderTables();
-            selectTable(selectedTableId);
-        }
-
-        // --- HIZLI MENÜ ALANI ---
-        function renderQuickMenu() {
-            const catContainer = document.getElementById('quickMenuCategories');
-            const itemsContainer = document.getElementById('quickMenuItems');
+            const netBalance = totalIncome - totalExpense;
             
-            catContainer.innerHTML = '';
-            itemsContainer.innerHTML = '';
-
-            // Kategorileri listele
-            catContainer.innerHTML = `
-                <button onclick="setQuickCategory('all')" class="px-2.5 py-1 text-[10px] font-bold rounded-full ${activeMenuCategory === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'} whitespace-nowrap">Tümü</button>
-            `;
-            categories.forEach(cat => {
-                const activeC = activeMenuCategory === cat.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200';
-                catContainer.innerHTML += `
-                    <button onclick="setQuickCategory('${cat.id}')" class="px-2.5 py-1 text-[10px] font-bold rounded-full ${activeC} whitespace-nowrap">${cat.icon} ${cat.name}</button>
-                `;
-            });
-
-            // Seçilen kategorideki ürünleri listele
-            let filteredProds = products;
-            if (activeMenuCategory !== 'all') {
-                filteredProds = products.filter(p => p.categoryId === activeMenuCategory);
-            }
-
-            filteredProds.forEach(prod => {
-                itemsContainer.innerHTML += `
-                    <button onclick="addOrderToTable('${prod.id}')" class="p-1.5 border rounded bg-white hover:bg-indigo-50 hover:border-indigo-200 transition text-left flex flex-col justify-between h-[52px]">
-                        <span class="text-[10px] font-semibold text-slate-800 line-clamp-2 leading-tight">${prod.name}</span>
-                        <span class="text-[9px] font-bold text-slate-500">₺${prod.price.toFixed(0)}</span>
-                    </button>
-                `;
-            });
-        }
-
-        function setQuickCategory(catId) {
-            activeMenuCategory = catId;
-            renderQuickMenu();
-        }
-
-        function openMenuForTable() {
-            switchTab('menu');
-        }
-
-        // --- İNDİRİM / İKRAM MODAL İŞLEMLERİ ---
-        function openDiscountModal() {
-            const table = tables.find(t => t.id === selectedTableId);
-            setDiscountType(table.discount.type || 'percent');
-            document.getElementById('discountValue').value = table.discount.value || 0;
-            document.getElementById('discountModal').classList.remove('hidden');
-        }
-
-        function setDiscountType(type) {
-            currentDiscountType = type;
-            const percentBtn = document.getElementById('discountTypePercent');
-            const flatBtn = document.getElementById('discountTypeFlat');
-
-            if (type === 'percent') {
-                percentBtn.className = "py-2 text-xs font-semibold rounded-lg border border-indigo-500 bg-indigo-50 text-indigo-700 flex items-center justify-center space-x-1";
-                flatBtn.className = "py-2 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-600 flex items-center justify-center space-x-1";
-            } else {
-                percentBtn.className = "py-2 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-600 flex items-center justify-center space-x-1";
-                flatBtn.className = "py-2 text-xs font-semibold rounded-lg border border-indigo-500 bg-indigo-50 text-indigo-700 flex items-center justify-center space-x-1";
-            }
-        }
-
-        function applyDiscount() {
-            const value = parseFloat(document.getElementById('discountValue').value) || 0;
-            const table = tables.find(t => t.id === selectedTableId);
-            table.discount = {
-                type: currentDiscountType,
-                value: value
-            };
-            saveData();
-            closeModal('discountModal');
-            renderActiveOrderItems(table);
-        }
-
-        // --- ÖDEME TAHSIİLATI VE ENTEGRE SEÇENEKLER ---
-        function openPaymentModal() {
-            const table = tables.find(t => t.id === selectedTableId);
-            if (table.orders.length === 0) {
-                showCustomAlert('Adisyon boş olduğu için ödeme alınamaz.', 'Bilgi', 'warning');
-                return;
-            }
-
-            const total = calculateTableTotal(table);
-            document.getElementById('paymentTotalLabel').textContent = `₺${total.toFixed(2)}`;
-            document.getElementById('paymentTableLabel').textContent = table.name;
-            document.getElementById('cashReceivedInput').value = '';
-            document.getElementById('cashChangeLabel').textContent = '₺0,00';
-
-            // Cari Müşteri Select Listesini Doldur
-            const selectList = document.getElementById('paymentCustomerSelect');
-            selectList.innerHTML = '';
-            customers.forEach(c => {
-                selectList.innerHTML += `<option value="${c.id}">${c.name} (Güncel Borç: ₺${c.balance.toFixed(2)})</option>`;
-            });
-
-            setPaymentType('cash');
-            setupQuickCashButtons(total);
-
-            // Hızlı cari ekleme formunu kapat
-            document.getElementById('quickCustomerForm').classList.add('hidden');
-            document.getElementById('quickCustName').value = '';
-            document.getElementById('quickCustPhone').value = '';
-
-            document.getElementById('paymentModal').classList.remove('hidden');
-        }
-
-        function setPaymentType(type) {
-            currentPaymentType = type;
-            const returnArea = document.getElementById('cashReturnCalculation');
-            const cariArea = document.getElementById('cariSelectionArea');
-
-            // Tüm ödeme yöntemlerinin ID listesi
-            const paymentTypes = ['cash', 'card', 'cari', 'ikram', 'yemeksepeti', 'getir', 'trendyol'];
-
-            // Aktif/Pasif Sınıfları
-            const defaultBtnClass = "py-2.5 border border-slate-100 bg-slate-50 rounded-xl flex flex-col items-center justify-center space-y-1 text-slate-600 hover:border-slate-300 transition";
-            const activeBtnClass = "py-2.5 border-2 border-indigo-600 bg-indigo-50/50 rounded-xl flex flex-col items-center justify-center space-y-1 text-indigo-700 transition";
-
-            paymentTypes.forEach(t => {
-                const btn = document.getElementById(`payBtn-${t}`);
-                if (btn) {
-                    btn.className = (t === type) ? activeBtnClass : defaultBtnClass;
-                }
-            });
-
-            // Alt Alanların Gösterimi
-            returnArea.classList.add('hidden');
-            cariArea.classList.add('hidden');
-
-            if (type === 'cash') {
-                returnArea.classList.remove('hidden');
-            } else if (type === 'cari') {
-                cariArea.classList.remove('hidden');
-            }
-        }
-
-        function toggleQuickCustomerForm() {
-            const form = document.getElementById('quickCustomerForm');
-            form.classList.toggle('hidden');
-        }
-
-        function saveQuickCustomer() {
-            const name = document.getElementById('quickCustName').value.trim();
-            const phone = document.getElementById('quickCustPhone').value.trim() || "Belirtilmedi";
-
-            if (!name) {
-                showCustomAlert('Lütfen müşteri adı soyadı alanını doldurun.', 'Hata', 'danger');
-                return;
-            }
-
-            const newCust = {
-                id: 'cust-' + Date.now(),
-                name: name,
-                phone: phone,
-                balance: 0
-            };
-
-            customers.push(newCust);
-            saveData();
-
-            // Select listesini yenile ve yeni ekleneni seçili yap
-            const selectList = document.getElementById('paymentCustomerSelect');
-            selectList.innerHTML = '';
-            customers.forEach(c => {
-                selectList.innerHTML += `<option value="${c.id}">${c.name} (Borç: ₺${c.balance.toFixed(2)})</option>`;
-            });
-            selectList.value = newCust.id;
-
-            // Formu gizle
-            document.getElementById('quickCustomerForm').classList.add('hidden');
-            document.getElementById('quickCustName').value = '';
-            document.getElementById('quickCustPhone').value = '';
-        }
-
-        function setupQuickCashButtons(total) {
-            const container = document.getElementById('quickCashButtons');
-            container.innerHTML = '';
+            // Update Text
+            document.getElementById('total-income').textContent = formatMoney(totalIncome);
+            document.getElementById('total-expense').textContent = formatMoney(totalExpense);
+            document.getElementById('net-balance').textContent = formatMoney(netBalance);
             
-            const startCash = Math.ceil(total / 10) * 10;
-            const options = [startCash, startCash + 10, startCash + 20, startCash + 50, startCash + 100];
-            const cleanOptions = [...new Set(options)].slice(0, 4);
-
-            cleanOptions.forEach(opt => {
-                container.innerHTML += `
-                    <button onclick="fillCashReceived(${opt})" class="px-3 py-1.5 bg-slate-100 hover:bg-indigo-600 hover:text-white rounded text-xs font-bold text-slate-700 whitespace-nowrap transition">₺${opt}</button>
-                `;
-            });
-        }
-
-        function fillCashReceived(val) {
-            document.getElementById('cashReceivedInput').value = val;
-            calculateChange();
-        }
-
-        function calculateChange() {
-            const table = tables.find(t => t.id === selectedTableId);
-            const total = calculateTableTotal(table);
-            const received = parseFloat(document.getElementById('cashReceivedInput').value) || 0;
+            // Update Progress Bar
+            const total = totalIncome + totalExpense;
+            const incPerc = total > 0 ? (totalIncome / total) * 100 : 0;
+            const expPerc = total > 0 ? (totalExpense / total) * 100 : 0;
             
-            let change = received - total;
-            if (change < 0) change = 0;
+            document.getElementById('ratio-bar-income').style.width = `${incPerc}%`;
+            document.getElementById('ratio-bar-expense').style.width = `${expPerc}%`;
+            document.getElementById('ratio-text').textContent = `%${Math.round(incPerc)}`;
+        }
+
+        // Custom Modal Logic
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalContent = document.getElementById('modal-content');
+        
+        function openModal(actionType, id = null) {
+            deleteActionType = actionType;
+            itemToDelete = id;
             
-            document.getElementById('cashChangeLabel').textContent = `₺${change.toFixed(2)}`;
-        }
-
-        function processPayment() {
-            const table = tables.find(t => t.id === selectedTableId);
-            const subtotal = table.orders.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0);
-            let discountValue = 0;
-            if (table.discount.type === 'percent') {
-                discountValue = (subtotal * table.discount.value) / 100;
-            } else {
-                discountValue = table.discount.value;
-            }
-            let total = subtotal - discountValue;
-
-            let customerId = null;
-            let customerName = null;
-
-            // Cari ödemelerde müşteriyi bul ve borç kaydet
-            if (currentPaymentType === 'cari') {
-                customerId = document.getElementById('paymentCustomerSelect').value;
-                if (!customerId) {
-                    showCustomAlert('Lütfen cari hesaba borç yazmak için bir müşteri seçin.', 'Hata', 'danger');
-                    return;
-                }
-                const customer = customers.find(c => c.id === customerId);
-                if (customer) {
-                    customer.balance += total;
-                    customerName = customer.name;
-                }
-            }
-
-            // İkram ise adisyon tutarı sıfırlanır ancak ciro takibinde 'ikram' olarak listelenir
-            if (currentPaymentType === 'ikram') {
-                discountValue = subtotal; // İkramda fatura bedeli komple indirim/ikram sayılır
-                total = 0;
-            }
-
-            // Fatura kaydet
-            const newBill = {
-                id: 'INV-' + Math.floor(100000 + Math.random() * 900000),
-                tableName: table.name,
-                orders: [...table.orders],
-                subtotal: subtotal,
-                discount: discountValue,
-                total: (currentPaymentType === 'ikram') ? subtotal : total, // İkram edilen toplam değeri raporda görebilmek için ham değeri tutuyoruz
-                paymentType: currentPaymentType,
-                customerId: customerId,
-                customerName: customerName,
-                date: new Date().toLocaleDateString('tr-TR'),
-                time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
-            };
-
-            completedBills.push(newBill);
-
-            // Masayı Boşalt ve Sıfırla
-            table.orders = [];
-            table.status = 'empty';
-            table.checkInTime = null;
-            table.discount = { type: 'percent', value: 0 };
-
-            saveData();
-            closeModal('paymentModal');
-            deselectTable();
-            renderTables();
-        }
-
-        // --- ADİSYON YAZDIRMA İŞLEMLERİ ---
-        function printActiveOrder() {
-            const table = tables.find(t => t.id === selectedTableId);
-            if (table.orders.length === 0) return;
-
-            const printItems = document.getElementById('printBillItems');
-            printItems.innerHTML = '';
-
-            let subtotal = 0;
-            table.orders.forEach(order => {
-                const itemTotal = order.price * order.quantity;
-                subtotal += itemTotal;
-                printItems.innerHTML += `
-                    <tr>
-                        <td class="py-1">${order.productName}</td>
-                        <td class="py-1 text-center">${order.quantity}</td>
-                        <td class="py-1 text-right">₺${itemTotal.toFixed(2)}</td>
-                    </tr>
-                `;
-            });
-
-            let discountValue = 0;
-            if (table.discount.type === 'percent') {
-                discountValue = (subtotal * table.discount.value) / 100;
-            } else {
-                discountValue = table.discount.value;
-            }
-            if (discountValue > subtotal) discountValue = subtotal;
-
-            const total = subtotal - discountValue;
-
-            document.getElementById('printTableCode').textContent = table.name;
-            document.getElementById('printDate').textContent = new Date().toLocaleDateString('tr-TR');
-            document.getElementById('printTime').textContent = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('printSubtotal').textContent = `₺${subtotal.toFixed(2)}`;
-            document.getElementById('printDiscount').textContent = `-₺${discountValue.toFixed(2)}`;
-            document.getElementById('printTotal').textContent = `₺${total.toFixed(2)}`;
-
-            window.print();
-        }
-
-        // --- MENÜ YÖNETİMİ SEKME İŞLEMLERİ ---
-        let selectedMenuCategory = 'all';
-
-        function renderMenuCategories() {
-            const list = document.getElementById('menuCategoriesList');
-            list.innerHTML = '';
-
-            const activeAllClass = selectedMenuCategory === 'all' ? 'bg-indigo-50 text-indigo-700 font-bold border-l-4 border-indigo-600' : 'text-slate-600 hover:bg-slate-50';
-            list.innerHTML += `
-                <button onclick="selectMenuCategory('all')" class="w-full text-left px-3 py-2 text-xs rounded transition flex items-center justify-between ${activeAllClass}">
-                    <span>🗂️ Tüm Menü</span>
-                    <span class="bg-slate-100 text-slate-500 font-bold px-1.5 py-0.5 rounded-full text-[10px]">${products.length}</span>
-                </button>
-            `;
-
-            categories.forEach(cat => {
-                const activeC = selectedMenuCategory === cat.id ? 'bg-indigo-50 text-indigo-700 font-bold border-l-4 border-indigo-600' : 'text-slate-600 hover:bg-slate-50';
-                const count = products.filter(p => p.categoryId === cat.id).length;
-                list.innerHTML += `
-                    <button onclick="selectMenuCategory('${cat.id}')" class="w-full text-left px-3 py-2 text-xs rounded transition flex items-center justify-between ${activeC}">
-                        <span>${cat.icon} ${cat.name}</span>
-                        <span class="bg-slate-100 text-slate-500 font-bold px-1.5 py-0.5 rounded-full text-[10px]">${count}</span>
-                    </button>
-                `;
-            });
-        }
-
-        function selectMenuCategory(id) {
-            selectedMenuCategory = id;
-            if (id === 'all') {
-                document.getElementById('currentMenuCategoryTitle').textContent = 'Tüm Ürünler';
-            } else {
-                const cat = categories.find(c => c.id === id);
-                document.getElementById('currentMenuCategoryTitle').textContent = `${cat.icon} ${cat.name}`;
-            }
-            renderMenuCategories();
-            renderMenuItems();
-        }
-
-        function renderMenuItems() {
-            const grid = document.getElementById('menuItemsGrid');
-            grid.innerHTML = '';
-
-            let filtered = products;
-            if (selectedMenuCategory !== 'all') {
-                filtered = products.filter(p => p.categoryId === selectedMenuCategory);
-            }
-
-            if (filtered.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full bg-white p-12 text-center rounded-xl border border-slate-100 flex flex-col items-center">
-                        <i class="bi bi-box2 text-3xl text-slate-300 mb-2"></i>
-                        <h4 class="font-semibold text-slate-700 text-sm">Ürün Bulunmuyor</h4>
-                        <p class="text-xs text-slate-400 mt-1">Bu kategoride henüz tanımlanmış ürün yok.</p>
-                    </div>
-                `;
+            if(actionType === 'clearAll' && transactions.length === 0) {
+                showToast('Silinecek veri bulunmuyor.', 'error');
                 return;
             }
 
-            filtered.forEach(prod => {
-                const cat = categories.find(c => c.id === prod.categoryId);
-                const catBadge = cat ? `<span class="text-[9px] font-bold bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded">${cat.icon} ${cat.name}</span>` : '';
-                const descText = prod.desc ? `<p class="text-xs text-slate-400 mt-1 line-clamp-2">${prod.desc}</p>` : '';
-
-                grid.innerHTML += `
-                    <div onclick="openEditProductModal('${prod.id}')" class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 hover:border-indigo-300 hover:shadow transition duration-200 cursor-pointer flex flex-col justify-between h-[130px]">
-                        <div>
-                            <div class="flex items-start justify-between">
-                                <h4 class="font-bold text-slate-800 text-xs leading-snug line-clamp-1">${prod.name}</h4>
-                                <span class="text-xs font-bold text-slate-900 whitespace-nowrap ml-2">₺${prod.price.toFixed(2)}</span>
-                            </div>
-                            ${descText}
-                        </div>
-                        <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-50">
-                            ${catBadge}
-                            <span class="text-[9px] font-semibold text-indigo-600 hover:underline">Düzenle <i class="bi bi-chevron-right text-[8px]"></i></span>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        // --- ÜRÜN ARA ---
-        function searchMenu() {
-            const query = document.getElementById('searchMenuItem').value.toLowerCase();
-            const grid = document.getElementById('menuItemsGrid');
-            grid.innerHTML = '';
-
-            const filtered = products.filter(p => p.name.toLowerCase().includes(query) || (p.desc && p.desc.toLowerCase().includes(query)));
-
-            if (filtered.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full bg-white p-12 text-center rounded-xl border border-slate-100 flex flex-col items-center">
-                        <i class="bi bi-search text-3xl text-slate-300 mb-2"></i>
-                        <h4 class="font-semibold text-slate-700 text-sm">Ürün Bulunamadı</h4>
-                        <p class="text-xs text-slate-400 mt-1">Arama kriterlerinizle eşleşen bir ürün yok.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            filtered.forEach(prod => {
-                const cat = categories.find(c => c.id === prod.categoryId);
-                const catBadge = cat ? `<span class="text-[9px] font-bold bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded">${cat.icon} ${cat.name}</span>` : '';
-                const descText = prod.desc ? `<p class="text-xs text-slate-400 mt-1 line-clamp-2">${prod.desc}</p>` : '';
-
-                grid.innerHTML += `
-                    <div onclick="openEditProductModal('${prod.id}')" class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 hover:border-indigo-300 hover:shadow transition duration-200 cursor-pointer flex flex-col justify-between h-[130px]">
-                        <div>
-                            <div class="flex items-start justify-between">
-                                <h4 class="font-bold text-slate-800 text-xs leading-snug line-clamp-1">${prod.name}</h4>
-                                <span class="text-xs font-bold text-slate-900 whitespace-nowrap ml-2">₺${prod.price.toFixed(2)}</span>
-                            </div>
-                            ${descText}
-                        </div>
-                        <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-50">
-                            ${catBadge}
-                            <span class="text-[9px] font-semibold text-indigo-600 hover:underline">Düzenle <i class="bi bi-chevron-right text-[8px]"></i></span>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        // --- KATEGORİ EKLEME ---
-        function openAddCategoryModal() {
-            document.getElementById('newCategoryName').value = '';
-            document.getElementById('newCategoryIcon').value = '🍽️';
-            document.getElementById('addCategoryModal').classList.remove('hidden');
-        }
-
-        function saveNewCategory() {
-            const name = document.getElementById('newCategoryName').value.trim();
-            const icon = document.getElementById('newCategoryIcon').value.trim() || '🍽️';
-
-            if (!name) {
-                showCustomAlert('Lütfen bir kategori adı girin.', 'Hata', 'danger');
-                return;
-            }
-
-            const newCat = {
-                id: 'cat-' + Date.now(),
-                name: name,
-                icon: icon
-            };
-
-            categories.push(newCat);
-            saveData();
-            closeModal('addCategoryModal');
-            renderMenuCategories();
-            renderQuickMenu();
-        }
-
-        // --- ÜRÜN EKLE / DÜZENLE ---
-        function openAddProductModal() {
-            document.getElementById('productModalTitle').textContent = 'Yeni Ürün Ekle';
-            document.getElementById('editProductId').value = '';
-            document.getElementById('productName').value = '';
-            document.getElementById('productPrice').value = '';
-            document.getElementById('productDesc').value = '';
-            document.getElementById('deleteProductBtn').classList.add('hidden');
-
-            const select = document.getElementById('productCategory');
-            select.innerHTML = '';
-            categories.forEach(c => {
-                select.innerHTML += `<option value="${c.id}">${c.icon} ${c.name}</option>`;
-            });
-
-            document.getElementById('addProductModal').classList.remove('hidden');
-        }
-
-        function openEditProductModal(id) {
-            const prod = products.find(p => p.id === id);
-            document.getElementById('productModalTitle').textContent = 'Ürün Düzenle';
-            document.getElementById('editProductId').value = prod.id;
-            document.getElementById('productName').value = prod.name;
-            document.getElementById('productPrice').value = prod.price;
-            document.getElementById('productDesc').value = prod.desc || '';
-            document.getElementById('deleteProductBtn').classList.remove('hidden');
-
-            const select = document.getElementById('productCategory');
-            select.innerHTML = '';
-            categories.forEach(c => {
-                const selected = c.id === prod.categoryId ? 'selected' : '';
-                select.innerHTML += `<option value="${c.id}" ${selected}>${c.icon} ${c.name}</option>`;
-            });
-
-            document.getElementById('addProductModal').classList.remove('hidden');
-        }
-
-        function saveProduct() {
-            const id = document.getElementById('editProductId').value;
-            const name = document.getElementById('productName').value.trim();
-            const price = parseFloat(document.getElementById('productPrice').value) || 0;
-            const catId = document.getElementById('productCategory').value;
-            const desc = document.getElementById('productDesc').value.trim();
-
-            if (!name || price <= 0) {
-                showCustomAlert('Lütfen geçerli bir ürün adı ve fiyatı girin.', 'Hata', 'danger');
-                return;
-            }
-
-            if (id) {
-                const idx = products.findIndex(p => p.id === id);
-                products[idx].name = name;
-                products[idx].price = price;
-                products[idx].categoryId = catId;
-                products[idx].desc = desc;
-            } else {
-                const newProd = {
-                    id: 'prod-' + Date.now(),
-                    name: name,
-                    price: price,
-                    categoryId: catId,
-                    desc: desc
-                };
-                products.push(newProd);
-            }
-
-            saveData();
-            closeModal('addProductModal');
-            renderMenuItems();
-            renderMenuCategories();
-            renderQuickMenu();
-        }
-
-        function deleteProduct() {
-            const id = document.getElementById('editProductId').value;
-            if (!id) return;
+            document.getElementById('modal-title').textContent = actionType === 'clearAll' ? 'Tümünü Sil?' : 'İşlemi Sil?';
+            document.getElementById('modal-desc').textContent = actionType === 'clearAll' ? 'Tüm geçmiş işleminiz kalıcı olarak silinecek.' : 'Bu kayıt kalıcı olarak silinecek.';
             
-            showCustomConfirm(
-                'Bu ürünü menüden kalıcı olarak silmek istediğinizden emin misiniz?',
-                function() {
-                    products = products.filter(p => p.id !== id);
-                    saveData();
-                    closeModal('addProductModal');
-                    renderMenuItems();
-                    renderMenuCategories();
-                    renderQuickMenu();
-                },
-                "Ürün Silme Onayı"
-            );
-        }
-
-        // --- YENİ MASA EKLEME ---
-        function openAddTableModal() {
-            document.getElementById('newTableName').value = '';
-            document.getElementById('newTableCapacity').value = '4';
-            document.getElementById('addTableModal').classList.remove('hidden');
-        }
-
-        function saveNewTable() {
-            const name = document.getElementById('newTableName').value.trim();
-            const capacity = parseInt(document.getElementById('newTableCapacity').value) || 4;
-            const area = document.getElementById('newTableArea').value;
-
-            if (!name) {
-                showCustomAlert('Lütfen masa adını girin.', 'Eksik Bilgi', 'danger');
-                return;
-            }
-
-            const newTable = {
-                id: 'tab-' + Date.now(),
-                name: name,
-                area: area,
-                status: 'empty',
-                capacity: capacity,
-                orders: [],
-                checkInTime: null,
-                discount: { type: 'percent', value: 0 }
-            };
-
-            tables.push(newTable);
-            saveData();
-            closeModal('addTableModal');
-            renderTables();
-        }
-
-        // --- CARİ HESAP EKLEME MODALI ---
-        function openNewCustomerModal() {
-            document.getElementById('newCustomerName').value = '';
-            document.getElementById('newCustomerPhone').value = '';
-            document.getElementById('addCustomerModal').classList.remove('hidden');
-        }
-
-        function saveNewCustomer() {
-            const name = document.getElementById('newCustomerName').value.trim();
-            const phone = document.getElementById('newCustomerPhone').value.trim() || "Belirtilmedi";
-
-            if (!name) {
-                showCustomAlert('Lütfen müşteri adını girin.', 'Eksik Bilgi', 'danger');
-                return;
-            }
-
-            const newCust = {
-                id: 'cust-' + Date.now(),
-                name: name,
-                phone: phone,
-                balance: 0
-            };
-
-            customers.push(newCust);
-            saveData();
-            closeModal('addCustomerModal');
-            renderCariCustomers();
-        }
-
-        // --- CARİ HESAP TABLOSU VE İŞLEMLERİ ---
-        function renderCariCustomers() {
-            const tableBody = document.getElementById('cariCustomersTable');
-            tableBody.innerHTML = '';
-
-            if (customers.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="p-4 text-center text-slate-400">Kayıtlı cari hesap bulunmuyor.</td>
-                    </tr>
-                `;
-                return;
-            }
-
-            customers.forEach(cust => {
-                const balanceClass = cust.balance > 0 ? 'text-rose-600 font-extrabold' : 'text-slate-500';
-                tableBody.innerHTML += `
-                    <tr class="hover:bg-slate-50">
-                        <td class="p-3 font-semibold text-slate-700">${cust.name}</td>
-                        <td class="p-3 text-slate-500">${cust.phone}</td>
-                        <td class="p-3 text-right ${balanceClass}">₺${cust.balance.toFixed(2)}</td>
-                        <td class="p-3 text-right flex justify-end space-x-2">
-                            <button onclick="openTahsilatModal('${cust.id}')" class="px-2.5 py-1 text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition flex items-center space-x-1">
-                                <i class="bi bi-cash-coin"></i>
-                                <span>Tahsilat</span>
-                            </button>
-                            <button onclick="deleteCariCustomer('${cust.id}')" class="px-2.5 py-1 text-[11px] border border-slate-200 hover:bg-rose-50 hover:text-rose-600 text-slate-500 rounded-lg transition">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function deleteCariCustomer(id) {
-            const customer = customers.find(c => c.id === id);
-            if (!customer) return;
-
-            if (customer.balance > 0) {
-                showCustomAlert('Bakiyesi (borcu) bulunan bir cari hesabı silemezsiniz. Lütfen önce tahsilat yapın.', 'Hata', 'danger');
-                return;
-            }
-
-            showCustomConfirm(
-                `${customer.name} cari hesabını silmek istediğinizden emin misiniz?`,
-                function() {
-                    customers = customers.filter(c => c.id !== id);
-                    saveData();
-                    renderCariCustomers();
-                },
-                "Cari Hesap Silme Onayı"
-            );
-        }
-
-        // --- CARİ TABLOSU TAHSIİLATI YAPMA ---
-        function openTahsilatModal(id) {
-            const cust = customers.find(c => c.id === id);
-            if (!cust) return;
-
-            document.getElementById('tahsilatCustomerId').value = cust.id;
-            document.getElementById('tahsilatCustomerName').textContent = cust.name;
-            document.getElementById('tahsilatCustomerBalance').textContent = `₺${cust.balance.toFixed(2)}`;
-            document.getElementById('tahsilatAmount').value = '';
-            document.getElementById('tahsilatModal').classList.remove('hidden');
-        }
-
-        function processTahsilat() {
-            const id = document.getElementById('tahsilatCustomerId').value;
-            const amount = parseFloat(document.getElementById('tahsilatAmount').value) || 0;
-            const method = document.getElementById('tahsilatMethod').value;
-
-            if (amount <= 0) {
-                showCustomAlert('Lütfen geçerli bir tahsilat tutarı girin.', 'Geçersiz Tutar', 'danger');
-                return;
-            }
-
-            const cust = customers.find(c => c.id === id);
-            if (!cust) return;
-
-            if (amount > cust.balance) {
-                showCustomConfirm(
-                    'Tahsilat tutarı mevcut borçtan fazla. Fazla bakiye kaydedilsin mi?',
-                    function() {
-                        executeTahsilat(cust, amount, method);
-                    },
-                    "Fazla Tahsilat Onayı"
-                );
-            } else {
-                executeTahsilat(cust, amount, method);
-            }
-        }
-
-        function executeTahsilat(cust, amount, method) {
-            cust.balance -= amount;
-
-            // Yapılan tahsilatı gelir/ciro olarak raporlara ekle
-            const tahsilatBill = {
-                id: 'PAY-' + Math.floor(100000 + Math.random() * 900000),
-                tableName: `${cust.name} (Tahsilat)`,
-                orders: [{ productName: "Cari Hesap Tahsilatı", price: amount, quantity: 1, note: "" }],
-                subtotal: amount,
-                discount: 0,
-                total: amount,
-                paymentType: method,
-                date: new Date().toLocaleDateString('tr-TR'),
-                time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
-            };
-            completedBills.push(tahsilatBill);
-
-            saveData();
-            closeModal('tahsilatModal');
-            renderCariCustomers();
-            renderReports();
-        }
-
-        // --- MASA YÖNETİMİ TABLOSU ---
-        function renderManageTables() {
-            const tableBody = document.getElementById('manageTablesTable');
-            if (!tableBody) return;
-            tableBody.innerHTML = '';
-
-            tables.forEach(table => {
-                let statusBadge = '';
-                let actions = '';
-
-                if (table.status === 'empty') {
-                    statusBadge = '<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 text-slate-600">Boş</span>';
-                    actions = `
-                        <button onclick="deleteTable('${table.id}')" class="px-2.5 py-1 text-[11px] bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded-lg transition flex items-center space-x-1">
-                            <i class="bi bi-trash"></i>
-                            <span>Sil</span>
-                        </button>
-                    `;
-                } else if (table.status === 'active') {
-                    statusBadge = '<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-100 text-amber-800">Dolu / Servis Var</span>';
-                    actions = '<span class="text-[10px] text-slate-400 italic">Dolu (Silinemez)</span>';
-                } else {
-                    statusBadge = '<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-100 text-rose-800 animate-pulse">Hesap Bekliyor</span>';
-                    actions = '<span class="text-[10px] text-slate-400 italic">Hesap Bekliyor</span>';
-                }
-
-                tableBody.innerHTML += `
-                    <tr class="hover:bg-slate-50">
-                        <td class="p-3 font-semibold text-slate-700">${table.name}</td>
-                        <td class="p-3 text-slate-500">${table.area}</td>
-                        <td class="p-3 text-slate-500">${table.capacity} Kişi</td>
-                        <td class="p-3">${statusBadge}</td>
-                        <td class="p-3 text-right flex justify-end items-center h-full min-h-[40px]">${actions}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        // --- RAPORLAR VE ANALİZ SEKME İŞLEMLERİ ---
-        function renderReports() {
-            let dailyRev = 0;
-            let totalCash = 0;
-            let totalCard = 0;
-            let totalCari = 0;
-            let totalYemeksepeti = 0;
-            let totalGetir = 0;
-            let totalTrendyol = 0;
-            let totalIkram = 0;
-            let dailyDiscount = 0;
-
-            completedBills.forEach(bill => {
-                // İkram edilmeyen (gerçekleşen nakdi) ciroyu topla
-                if (bill.paymentType !== 'ikram') {
-                    dailyRev += bill.total;
-                }
-                dailyDiscount += bill.discount;
-
-                if (bill.paymentType === 'cash') totalCash += bill.total;
-                if (bill.paymentType === 'card') totalCard += bill.total;
-                if (bill.paymentType === 'cari') totalCari += bill.total;
-                if (bill.paymentType === 'yemeksepeti') totalYemeksepeti += bill.total;
-                if (bill.paymentType === 'getir') totalGetir += bill.total;
-                if (bill.paymentType === 'trendyol') totalTrendyol += bill.total;
-                if (bill.paymentType === 'ikram') totalIkram += bill.total;
-            });
-
-            document.getElementById('reportDailyRevenue').textContent = `₺${dailyRev.toFixed(2)}`;
-            document.getElementById('reportDailyOrdersCount').textContent = completedBills.length;
-            document.getElementById('reportDailyDiscounts').textContent = `₺${dailyDiscount.toFixed(2)}`;
+            modalOverlay.classList.remove('hidden');
+            modalOverlay.classList.add('flex');
             
-            // Tutar Etiketlerini Güncelle
-            document.getElementById('reportTotalCash').textContent = `₺${totalCash.toFixed(2)}`;
-            document.getElementById('reportTotalCard').textContent = `₺${totalCard.toFixed(2)}`;
-            document.getElementById('reportTotalCari').textContent = `₺${totalCari.toFixed(2)}`;
-            document.getElementById('reportTotalYemeksepeti').textContent = `₺${totalYemeksepeti.toFixed(2)}`;
-            document.getElementById('reportTotalGetir').textContent = `₺${totalGetir.toFixed(2)}`;
-            document.getElementById('reportTotalTrendyol').textContent = `₺${totalTrendyol.toFixed(2)}`;
-            document.getElementById('reportTotalIkram').textContent = `₺${totalIkram.toFixed(2)}`;
+            // Trigger animation
+            setTimeout(() => {
+                modalOverlay.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
 
-            const activeTablesCount = tables.filter(t => t.status !== 'empty').length;
-            document.getElementById('reportActiveTables').textContent = activeTablesCount;
-
-            // En çok tercih edilen yöntem belirleme
-            const payMethodsMap = {
-                'Nakit': totalCash,
-                'Kredi Kartı': totalCard,
-                'Cari Hesap': totalCari,
-                'Yemeksepeti': totalYemeksepeti,
-                'Getir Yemek': totalGetir,
-                'Trendyol': totalTrendyol,
-                'İkram': totalIkram
-            };
-
-            let mostUsed = 'Nakit';
-            let maxVal = 0;
-            for (const [key, value] of Object.entries(payMethodsMap)) {
-                if (value > maxVal) {
-                    mostUsed = key;
-                    maxVal = value;
-                }
-            }
-            document.getElementById('reportMostUsedMethod').textContent = mostUsed;
-
-            // İlerleme Çubuklarını (Progress Bars) ve Yüzdeleri Hesapla
-            const sum = totalCash + totalCard + totalCari + totalYemeksepeti + totalGetir + totalTrendyol + totalIkram;
+        function closeModal() {
+            modalOverlay.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
             
-            const updateBar = (barId, value) => {
-                const pct = sum > 0 ? (value / sum) * 100 : 0;
-                document.getElementById(barId).style.width = `${pct}%`;
-            };
+            setTimeout(() => {
+                modalOverlay.classList.add('hidden');
+                modalOverlay.classList.remove('flex');
+            }, 300);
+        }
 
-            updateBar('barCash', totalCash);
-            updateBar('barCard', totalCard);
-            updateBar('barCari', totalCari);
-            updateBar('barYemeksepeti', totalYemeksepeti);
-            updateBar('barGetir', totalGetir);
-            updateBar('barTrendyol', totalTrendyol);
-            updateBar('barIkram', totalIkram);
-
-            // Çok Dilimli SVG Donut Grafik Dilimlerinin Açısını Ayarla
-            if (sum > 0) {
-                const pCash = (totalCash / sum) * 100;
-                const pCard = (totalCard / sum) * 100;
-                const pCari = (totalCari / sum) * 100;
-                const pOnline = ((totalYemeksepeti + totalGetir + totalTrendyol) / sum) * 100;
-                const pTreat = (totalIkram / sum) * 100;
-                
-                document.getElementById('svgNakitPath').setAttribute('stroke-dasharray', `${pCash}, 100`);
-                
-                document.getElementById('svgKartPath').setAttribute('stroke-dasharray', `${pCard}, 100`);
-                document.getElementById('svgKartPath').setAttribute('stroke-dashoffset', `-${pCash}`);
-                
-                document.getElementById('svgCariPath').setAttribute('stroke-dasharray', `${pCari}, 100`);
-                document.getElementById('svgCariPath').setAttribute('stroke-dashoffset', `-${pCash + pCard}`);
-                
-                document.getElementById('svgOnlinePath').setAttribute('stroke-dasharray', `${pOnline}, 100`);
-                document.getElementById('svgOnlinePath').setAttribute('stroke-dashoffset', `-${pCash + pCard + pCari}`);
-                
-                document.getElementById('svgTreatPath').setAttribute('stroke-dasharray', `${pTreat}, 100`);
-                document.getElementById('svgTreatPath').setAttribute('stroke-dashoffset', `-${pCash + pCard + pCari + pOnline}`);
-            } else {
-                document.getElementById('svgNakitPath').setAttribute('stroke-dasharray', `0, 100`);
-                document.getElementById('svgKartPath').setAttribute('stroke-dasharray', `0, 100`);
-                document.getElementById('svgCariPath').setAttribute('stroke-dasharray', `0, 100`);
-                document.getElementById('svgOnlinePath').setAttribute('stroke-dasharray', `0, 100`);
-                document.getElementById('svgTreatPath').setAttribute('stroke-dasharray', `0, 100`);
+        // Execute Modal Action
+        document.getElementById('modal-confirm-btn').addEventListener('click', function() {
+            if (deleteActionType === 'single' && itemToDelete) {
+                transactions = transactions.filter(t => t.id !== itemToDelete);
+                showToast("İşlem silindi.");
+            } else if (deleteActionType === 'clearAll') {
+                transactions = [];
+                localStorage.removeItem('ciroPremiumData'); // Different key for safety
+                showToast("Tüm veriler temizlendi.");
             }
+            
+            saveData();
+            closeModal();
+        });
 
-            // Fatura listesi
-            const tableBody = document.getElementById('completedBillsTable');
-            tableBody.innerHTML = '';
-
-            if (completedBills.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="p-6 text-center text-slate-400">Bugün kapatılmış bir adisyon bulunmamaktadır.</td>
-                    </tr>
-                `;
+        // Export Data
+        function exportData() {
+            if(transactions.length === 0) {
+                showToast('Aktarılacak veri yok.', 'error');
                 return;
             }
-
-            const reversedBills = [...completedBills].reverse();
-
-            reversedBills.forEach(bill => {
-                let typeIcon = '';
-                if (bill.paymentType === 'cash') {
-                    typeIcon = '<span class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold text-[9px] border border-emerald-200">Nakit</span>';
-                } else if (bill.paymentType === 'card') {
-                    typeIcon = '<span class="text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full font-bold text-[9px] border border-indigo-200">Kart</span>';
-                } else if (bill.paymentType === 'cari') {
-                    typeIcon = `<span class="text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full font-bold text-[9px] border border-amber-200" title="Cari: ${bill.customerName}">Cari: ${bill.customerName || 'Müşteri'}</span>`;
-                } else if (bill.paymentType === 'yemeksepeti') {
-                    typeIcon = '<span class="text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full font-bold text-[9px] border border-rose-200">Yemeksepeti</span>';
-                } else if (bill.paymentType === 'getir') {
-                    typeIcon = '<span class="text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full font-bold text-[9px] border border-purple-200">Getir Yemek</span>';
-                } else if (bill.paymentType === 'trendyol') {
-                    typeIcon = '<span class="text-orange-700 bg-orange-50 px-2 py-0.5 rounded-full font-bold text-[9px] border border-orange-200">Trendyol</span>';
-                } else if (bill.paymentType === 'ikram') {
-                    typeIcon = '<span class="text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full font-bold text-[9px] border border-teal-200">İkram (Treat)</span>';
-                }
-
-                tableBody.innerHTML += `
-                    <tr class="hover:bg-slate-50">
-                        <td class="p-3 font-medium text-slate-700">${bill.id}</td>
-                        <td class="p-3 font-semibold text-slate-600">${bill.tableName}</td>
-                        <td class="p-3 text-slate-500">${bill.time}</td>
-                        <td class="p-3">${typeIcon}</td>
-                        <td class="p-3 text-right font-bold text-slate-800">₺${bill.total.toFixed(2)}</td>
-                    </tr>
-                `;
-            });
-
-            renderManageTables();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(transactions, null, 2));
+            const dlNode = document.createElement('a');
+            dlNode.setAttribute("href", dataStr);
+            dlNode.setAttribute("download", "CiroPremium_" + new Date().toISOString().slice(0,10) + ".json");
+            document.body.appendChild(dlNode);
+            dlNode.click();
+            dlNode.remove();
+            showToast('Veriler indirildi.');
         }
 
-        function clearAllReports() {
-            showCustomConfirm(
-                'Tüm ciro ve kapatılan adisyon geçmişini silmek istediğinize emin misiniz?',
-                function() {
-                    completedBills = [];
-                    saveData();
-                    renderReports();
-                },
-                "Rapor Sıfırlama"
-            );
-        }
-
-        // --- YARDIMCI MATEMATİK & GENEL FONKSİYONLAR ---
-        function calculateTableTotal(table) {
-            let subtotal = table.orders.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0);
-            let discountValue = 0;
-            if (table.discount.type === 'percent') {
-                discountValue = (subtotal * table.discount.value) / 100;
-            } else {
-                discountValue = table.discount.value;
-            }
-            if (discountValue > subtotal) discountValue = subtotal;
-            return subtotal - discountValue;
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-        }
+        // Init
+        window.onload = function() {
+            loadData();
+        };
     </script>
 </body>
 </html>
